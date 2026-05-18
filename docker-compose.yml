@@ -1,0 +1,156 @@
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    platform: linux/arm64
+    container_name: benchmark-postgres
+    environment:
+      POSTGRES_USER: benchmark
+      POSTGRES_PASSWORD: benchmark
+      POSTGRES_DB: benchmark
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/postgres/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - pgdata:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+
+  raw_sql:
+    build:
+      context: ./benchmarks/raw_sql
+      dockerfile: Dockerfile
+    platform: linux/arm64
+    container_name: benchmark-raw-sql
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: benchmark
+      DB_USER: benchmark
+      DB_PASS: benchmark
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+
+  eloquent:
+    build:
+      context: ./benchmarks/eloquent
+      dockerfile: Dockerfile
+    platform: linux/arm64
+    container_name: benchmark-eloquent
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: benchmark
+      DB_USER: benchmark
+      DB_PASS: benchmark
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+
+  doctrine:
+    build:
+      context: ./benchmarks/doctrine
+      dockerfile: Dockerfile
+    platform: linux/arm64
+    container_name: benchmark-doctrine
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: benchmark
+      DB_USER: benchmark
+      DB_PASS: benchmark
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+
+  prisma:
+    build:
+      context: ./benchmarks/prisma
+      dockerfile: Dockerfile
+    platform: linux/arm64
+    container_name: benchmark-prisma
+    environment:
+      DATABASE_URL: postgresql://benchmark:benchmark@postgres:5432/benchmark
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+
+  drizzle:
+    build:
+      context: ./benchmarks/drizzle
+      dockerfile: Dockerfile
+    platform: linux/arm64
+    container_name: benchmark-drizzle
+    environment:
+      DATABASE_URL: postgresql://benchmark:benchmark@postgres:5432/benchmark
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+
+  sqlalchemy:
+    build:
+      context: ./benchmarks/sqlalchemy
+      dockerfile: Dockerfile
+    platform: linux/arm64
+    container_name: benchmark-sqlalchemy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: benchmark
+      DB_USER: benchmark
+      DB_PASS: benchmark
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+
+  hibernate:
+    build:
+      context: ./benchmarks/hibernate
+      dockerfile: Dockerfile
+    platform: linux/arm64
+    container_name: benchmark-hibernate
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: benchmark
+      DB_USER: benchmark
+      DB_PASS: benchmark
+    depends_on:
+      - postgres
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+
+volumes:
+  pgdata:
