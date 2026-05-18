@@ -35,12 +35,13 @@ services:
       postgres:
         condition: service_healthy
 
-  raw_sql:
+  # ── PHP: raw_sql + eloquent + doctrine ───────────────────
+  php:
     build:
-      context: ./benchmarks/raw_sql
+      context: ./benchmarks/php
       dockerfile: Dockerfile
     platform: linux/arm64
-    container_name: benchmark-raw-sql
+    container_name: benchmark-php
     env_file:
       - .env
     depends_on:
@@ -51,47 +52,14 @@ services:
         limits:
           cpus: '2'
           memory: 1G
-
-  eloquent:
+ 
+  # ── TypeScript: raw_sql + prisma + drizzle ───────────────
+  typescript:
     build:
-      context: ./benchmarks/eloquent
+      context: ./benchmarks/typescript
       dockerfile: Dockerfile
     platform: linux/arm64
-    container_name: benchmark-eloquent
-    env_file:
-      - .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 1G
-
-  doctrine:
-    build:
-      context: ./benchmarks/doctrine
-      dockerfile: Dockerfile
-    platform: linux/arm64
-    container_name: benchmark-doctrine
-    env_file:
-      - .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 1G
-
-  prisma:
-    build:
-      context: ./benchmarks/prisma
-      dockerfile: Dockerfile
-    platform: linux/arm64
-    container_name: benchmark-prisma
+    container_name: benchmark-typescript
     environment:
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASS}@postgres:5432/${DB_NAME}
     depends_on:
@@ -102,30 +70,14 @@ services:
         limits:
           cpus: '2'
           memory: 1G
-
-  drizzle:
+ 
+  # ── Python: raw_sql + sqlalchemy ─────────────────────────
+  python:
     build:
-      context: ./benchmarks/drizzle
+      context: ./benchmarks/python
       dockerfile: Dockerfile
     platform: linux/arm64
-    container_name: benchmark-drizzle
-    environment:
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASS}@postgres:5432/${DB_NAME}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 1G
-
-  sqlalchemy:
-    build:
-      context: ./benchmarks/sqlalchemy
-      dockerfile: Dockerfile
-    platform: linux/arm64
-    container_name: benchmark-sqlalchemy
+    container_name: benchmark-python
     env_file:
       - .env
     depends_on:
@@ -136,13 +88,14 @@ services:
         limits:
           cpus: '2'
           memory: 1G
-
-  hibernate:
+ 
+  # ── Java: raw_sql + hibernate ────────────────────────────
+  java:
     build:
-      context: ./benchmarks/hibernate
+      context: ./benchmarks/java
       dockerfile: Dockerfile
     platform: linux/arm64
-    container_name: benchmark-hibernate
+    container_name: benchmark-java
     env_file:
       - .env
     depends_on:
