@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  name       String
+  created_at DateTime
+  orders     Order[]
+  reviews    Review[]
+
+  @@map("users")
+}
+
+model Category {
+  id        Int        @id @default(autoincrement())
+  name      String
+  parent_id Int?
+  parent    Category?  @relation("CategoryChildren", fields: [parent_id], references: [id])
+  children  Category[] @relation("CategoryChildren")
+  products  Product[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[] @relation("ProductTags")
+
+  @@map("tags")
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  name        String
+  price       Decimal     @db.Decimal(10, 2)
+  description String?
+  category_id Int
+  created_at  DateTime
+  category    Category    @relation(fields: [category_id], references: [id])
+  tags        Tag[]       @relation("ProductTags")
+  orderItems  OrderItem[]
+  reviews     Review[]
+
+  @@map("products")
+}
+
+model Order {
+  id         Int         @id @default(autoincrement())
+  user_id    Int
+  total      Decimal     @db.Decimal(10, 2)
+  status     String
+  created_at DateTime
+  user       User        @relation(fields: [user_id], references: [id])
+  items      OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  order_id   Int
+  product_id Int
+  quantity   Int
+  price      Decimal @db.Decimal(10, 2)
+  order      Order   @relation(fields: [order_id], references: [id])
+  product    Product @relation(fields: [product_id], references: [id])
+
+  @@map("order_items")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  product_id Int
+  rating     Int
+  comment    String?
+  created_at DateTime
+  user       User     @relation(fields: [user_id], references: [id])
+  product    Product  @relation(fields: [product_id], references: [id])
+
+  @@map("reviews")
+}
+
+model ProductTag {
+  product_id Int
+  tag_id     Int
+
+  @@id([product_id, tag_id])
+  @@map("product_tags")
+}
