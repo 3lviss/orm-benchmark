@@ -52,21 +52,20 @@ export class Scenario {
     `;
 
     // Separate query per order — intentional N+1
-    const results = await Promise.all(
-      orderList.map(async (order) => {
-        const userResult = await this.sql`
-          SELECT id, name, email
-          FROM users
-          WHERE id = ${order.user_id}
-        `;
-        return {
-          order_id: order.id,
-          total:    order.total,
-          status:   order.status,
-          user:     userResult[0] ?? null,
-        };
-      })
-    );
+    const results = [];
+    for (const order of orderList) {
+      const userResult = await this.sql`
+        SELECT id, name, email
+        FROM users
+        WHERE id = ${order.user_id}
+      `;
+      results.push({
+        order_id: order.id,
+        total:    order.total,
+        status:   order.status,
+        user:     userResult[0] ?? null,
+      });
+    }
 
     return results;
   }

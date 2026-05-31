@@ -67,8 +67,6 @@ services:
     container_name: benchmark-typescript
     env_file:
       - .env
-    environment:
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASS}@postgres:5432/${DB_NAME}
     depends_on:
       postgres:
         condition: service_healthy

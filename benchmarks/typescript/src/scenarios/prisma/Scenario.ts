@@ -36,10 +36,12 @@ export class Scenario {
   }
 
   /**
-   * A3 — N+1 diagnostic: load 100 orders then access user for each.
-   * Prisma uses dataloader by default — batches user queries automatically.
-   * This scenario tests whether N+1 is exhibited in default configuration.
-   */
+ * A3 — N+1 diagnostic: load 100 orders then access user for each.
+ * Intentionally uses sequential access without explicit eager loading
+ * to test N+1 behaviour in default configuration.
+ * Sequential loop ensures fair comparison with PHP, Python, and Java
+ * implementations which cannot parallelize queries.
+ */
   async a3(): Promise<object[]> {
     const orders = await this.client.order.findMany({
       orderBy: { id: 'asc' },
@@ -47,19 +49,18 @@ export class Scenario {
     });
 
     // Accessing user for each order — Prisma dataloader batches these
-    const results = await Promise.all(
-      orders.map(async (order) => {
-        const user = await this.client.user.findUnique({
-          where: { id: order.user_id },
-        });
-        return {
-          order_id: order.id,
-          total:    order.total,
-          status:   order.status,
-          user:     user,
-        };
-      })
-    );
+    const results = [];
+    for (const order of orders) {
+      const user = await this.client.user.findUnique({
+        where: { id: order.user_id },
+      });
+      results.push({
+        order_id: order.id,
+        total:    order.total,
+        status:   order.status,
+        user:     user,
+      });
+    }
 
     return results;
   }

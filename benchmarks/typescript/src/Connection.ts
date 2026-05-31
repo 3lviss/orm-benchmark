@@ -10,11 +10,24 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 // Prisma client — schema-first ORM with built-in dataloader
 let prismaInstance: PrismaClient | null = null;
 
+/**
+ * Builds DATABASE_URL from individual environment variables.
+ * Allows all services to use the same .env file format.
+ */
+function buildDatabaseUrl(): string {
+  const host = process.env.DB_HOST || 'localhost';
+  const port = process.env.DB_PORT || '5432';
+  const name = process.env.DB_NAME || 'benchmark';
+  const user = process.env.DB_USER || 'benchmark';
+  const pass = process.env.DB_PASS || 'benchmark';
+  return `postgresql://${user}:${pass}@${host}:${port}/${name}`;
+}
+
 export function getPrismaClient(): PrismaClient {
   if (!prismaInstance) {
     prismaInstance = new PrismaClient({
       datasources: {
-        db: { url: process.env.DATABASE_URL },
+        db: { url: buildDatabaseUrl() },
       },
     });
   }
@@ -27,7 +40,7 @@ let postgresInstance: ReturnType<typeof postgres> | null = null;
 
 export function getDrizzleClient() {
   if (!drizzleInstance) {
-    postgresInstance = postgres(process.env.DATABASE_URL!, {
+    postgresInstance = postgres(buildDatabaseUrl(), {
       max: 10, // connection pool size
     });
     drizzleInstance = drizzle(postgresInstance);
@@ -40,7 +53,7 @@ let rawSqlInstance: ReturnType<typeof postgres> | null = null;
 
 export function getRawSqlClient() {
   if (!rawSqlInstance) {
-    rawSqlInstance = postgres(process.env.DATABASE_URL!, {
+    rawSqlInstance = postgres(buildDatabaseUrl(), {
       max: 10, // connection pool size
     });
   }

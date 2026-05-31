@@ -62,22 +62,21 @@ export class Scenario {
       .limit(100);
 
     // Separate query per order — N+1 behaviour
-    const results = await Promise.all(
-      orderList.map(async (order) => {
-        const userResult = await this.db
-          .select()
-          .from(users)
-          .where(eq(users.id, order.user_id))
-          .limit(1);
+    const results = [];
+    for (const order of orderList) {
+      const userResult = await this.db
+        .select()
+        .from(users)
+        .where(eq(users.id, order.user_id))
+        .limit(1);
 
-        return {
-          order_id: order.id,
-          total:    order.total,
-          status:   order.status,
-          user:     userResult[0] ?? null,
-        };
-      })
-    );
+      results.push({
+        order_id: order.id,
+        total:    order.total,
+        status:   order.status,
+        user:     userResult[0] ?? null,
+      });
+    }
 
     return results;
   }
