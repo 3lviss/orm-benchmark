@@ -1,0 +1,19 @@
+{
+    "name": "orm-benchmark/php",
+    "description": "PHP ORM benchmark: raw SQL, Eloquent, Doctrine",
+    "require": {
+        "php": "^8.3",
+        "illuminate/database": "^11.0",
+        "doctrine/orm": "^3.0",
+        "doctrine/dbal": "^4.0",
+        "symfony/cache": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Benchmark\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
