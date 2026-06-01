@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+             https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+    <persistence-unit name="benchmark" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <!-- Entity classes -->
+        <class>com.benchmark.scenarios.hibernate.entities.User</class>
+        <class>com.benchmark.scenarios.hibernate.entities.Category</class>
+        <class>com.benchmark.scenarios.hibernate.entities.Tag</class>
+        <class>com.benchmark.scenarios.hibernate.entities.Product</class>
+        <class>com.benchmark.scenarios.hibernate.entities.Order</class>
+        <class>com.benchmark.scenarios.hibernate.entities.OrderItem</class>
+        <class>com.benchmark.scenarios.hibernate.entities.Review</class>
+
+        <properties>
+            <!-- Connection -->
+            <property name="jakarta.persistence.jdbc.driver"   value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url"
+                      value="jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:benchmark}"/>
+            <property name="jakarta.persistence.jdbc.user"     value="${DB_USER:benchmark}"/>
+            <property name="jakarta.persistence.jdbc.password" value="${DB_PASS:benchmark}"/>
+
+            <!-- HikariCP connection pool -->
+            <property name="hibernate.connection.provider_class"
+                      value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
+            <property name="hibernate.hikari.maximumPoolSize"  value="10"/>
+            <property name="hibernate.hikari.minimumIdle"      value="2"/>
+
+            <!-- Hibernate settings -->
+            <property name="hibernate.dialect"
+                      value="org.hibernate.dialect.PostgreSQLDialect"/>
+            <property name="hibernate.show_sql"                value="false"/>
+            <property name="hibernate.format_sql"              value="false"/>
+            <property name="hibernate.hbm2ddl.auto"           value="none"/>
+
+            <!-- Disable second-level cache for fair benchmarking -->
+            <property name="hibernate.cache.use_second_level_cache" value="false"/>
+            <property name="hibernate.cache.use_query_cache"        value="false"/>
+        </properties>
+    </persistence-unit>
+</persistence>
