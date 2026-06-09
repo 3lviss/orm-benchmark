@@ -2,7 +2,10 @@
 
 namespace Benchmark\Scenarios\Eloquent;
 
-use Illuminate\Database\Capsule\Manager as Capsule;
+use Benchmark\QueryCounter;
+use Illuminate\Database\Capsule\Manager;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Events\Dispatcher;
 
 /**
  * Bootstraps Eloquent ORM without Laravel framework.
@@ -18,9 +21,9 @@ class Bootstrap
             return;
         }
 
-        $capsule = new Capsule();
+        $capsuleManager = new Manager();
 
-        $capsule->addConnection([
+        $capsuleManager->addConnection([
             'driver'   => 'pgsql',
             'host'     => getenv('DB_HOST') ?: 'localhost',
             'port'     => getenv('DB_PORT') ?: '5432',
@@ -32,9 +35,17 @@ class Bootstrap
             'schema'   => 'public',
         ]);
 
-        // Make capsule globally available
-        $capsule->setAsGlobal();
-        $capsule->bootEloquent();
+        $capsuleManager->setAsGlobal();
+        $capsuleManager->bootEloquent();
+
+        // Capsule standalone does not create an event dispatcher automatically.
+        // We must instantiate and set one before registering any listeners.
+        $dispatcher = new Dispatcher();
+        $capsuleManager->setEventDispatcher($dispatcher);
+
+        $dispatcher->listen(QueryExecuted::class, function () {
+            QueryCounter::increment();
+        });
 
         self::$initialized = true;
     }

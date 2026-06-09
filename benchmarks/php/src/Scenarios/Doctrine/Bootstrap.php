@@ -22,6 +22,9 @@ class Bootstrap
                 isDevMode: false,
             );
 
+            // Attach query counter middleware before creating connection
+            $config->setMiddlewares([new QueryCountingMiddleware()]);
+
             $connection = DriverManager::getConnection([
                 'driver'   => 'pdo_pgsql',
                 'host'     => getenv('DB_HOST') ?: 'localhost',

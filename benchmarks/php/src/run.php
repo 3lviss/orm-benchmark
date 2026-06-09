@@ -2,6 +2,8 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use Benchmark\QueryCounter;
+
 /**
  * Entry point for PHP benchmarks.
  *
@@ -10,6 +12,10 @@ require_once __DIR__ . '/../vendor/autoload.php';
  * Warm-up and measurement use adaptive stopping rules:
  * - Warm-up: continues until CV < 5% over rolling window of 10
  * - Measurement: continues until bootstrap p99 CI width < 5% of p99
+ *
+ * Query counting:
+ * - raw_sql: returns -1 (queries are explicit and statically known from code)
+ * - eloquent/doctrine: returns actual query count via listeners/middleware
  */
 $implementation = strtolower($argv[1] ?? 'raw_sql');
 $scenario       = strtoupper($argv[2] ?? 'A1');
@@ -40,6 +46,10 @@ if (!method_exists($runner, $method)) {
     exit(1);
 }
 
+// raw_sql uses PDO directly — no listener mechanism available.
+// Query counts are statically known from code, so we skip collection.
+$isRawSql = $implementation === 'raw_sql';
+
 // ── Warm-up phase (adaptive: CV < 5% over rolling window of 10) ──────────────
 $warmupWindow   = [];
 $warmupCount    = 0;
@@ -47,6 +57,7 @@ $warmupDone     = false;
 $maxWarmup      = 2000;
 
 while (!$warmupDone && $warmupCount < $maxWarmup) {
+    QueryCounter::reset();
     $start = hrtime(true);
     $runner->$method();
     $end = hrtime(true);
@@ -73,16 +84,19 @@ while (!$warmupDone && $warmupCount < $maxWarmup) {
 
 // ── Measurement phase (adaptive: bootstrap CI width < 5% of p99) ─────────────
 $measurements   = [];
+$queryCounts    = [];
 $maxMeasure     = 10000;
 $checkEvery     = 100;
 $minMeasure     = 100;
 
 while (count($measurements) < $maxMeasure) {
+    QueryCounter::reset();
     $start = hrtime(true);
     $runner->$method();
     $end = hrtime(true);
 
     $measurements[] = ($end - $start) / 1_000_000;
+    $queryCounts[]  = $isRawSql ? -1 : QueryCounter::get();
 
     $n = count($measurements);
 
@@ -92,7 +106,6 @@ while (count($measurements) < $maxMeasure) {
         $p99value = $measurements[$p99index];
 
         if ($p99value > 0) {
-            // Bootstrap CI estimation
             $bootstrapP99s = [];
             for ($b = 0; $b < 500; $b++) {
                 $sample = [];
@@ -124,14 +137,26 @@ $mean   = array_sum($measurements) / $n;
 $variance = array_sum(array_map(fn($v) => ($v - $mean) ** 2, $measurements)) / $n;
 $stddev = sqrt($variance);
 
+$validCounts = array_filter($queryCounts, fn($q) => $q >= 0);
+$qMean       = count($validCounts) > 0
+    ? array_sum($validCounts) / count($validCounts)
+    : -1;
+$qSorted     = array_values($validCounts);
+sort($qSorted);
+$qMedian     = count($qSorted) > 0
+    ? $qSorted[(int) ceil(0.50 * count($qSorted)) - 1]
+    : -1;
+
 echo json_encode([
-    'implementation' => $implementation,
-    'scenario'       => $scenario,
-    'n_warmup'       => $warmupCount,
-    'n_measurements' => $n,
-    'p50_ms'         => round($p50, 4),
-    'p95_ms'         => round($p95, 4),
-    'p99_ms'         => round($p99, 4),
-    'mean_ms'        => round($mean, 4),
-    'stddev_ms'      => round($stddev, 4),
+    'implementation'     => $implementation,
+    'scenario'           => $scenario,
+    'n_warmup'           => $warmupCount,
+    'n_measurements'     => $n,
+    'p50_ms'             => round($p50, 4),
+    'p95_ms'             => round($p95, 4),
+    'p99_ms'             => round($p99, 4),
+    'mean_ms'            => round($mean, 4),
+    'stddev_ms'          => round($stddev, 4),
+    'query_count_mean'   => $qMean >= 0 ? round($qMean, 2) : -1,
+    'query_count_median' => $qMedian,
 ], JSON_PRETTY_PRINT) . "\n";
