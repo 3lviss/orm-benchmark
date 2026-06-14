@@ -284,21 +284,30 @@ public class Scenario {
             EntityTransaction tx = em.getTransaction();
             tx.begin();
  
-            int affected = em.createQuery(
-                "UPDATE Order o SET o.status = 'delivered' " +
-                "WHERE o.status = 'shipped' " +
-                "AND o.createdAt < :cutoff")
+            // JPQL does not support LIMIT on UPDATE — use native SQL with UPDATE FROM subquery
+            int affected = (int) em.createNativeQuery(
+                "UPDATE orders SET status = 'delivered' " +
+                "FROM (" +
+                "  SELECT id FROM orders " +
+                "  WHERE status = 'shipped' " +
+                "  AND created_at < :cutoff " +
+                "  ORDER BY id LIMIT 1000" +
+                ") AS batch WHERE orders.id = batch.id")
                 .setParameter("cutoff", thirtyDaysAgo)
                 .executeUpdate();
- 
+
             tx.commit();
- 
+
             // Restore original status
             tx.begin();
-            em.createQuery(
-                "UPDATE Order o SET o.status = 'shipped' " +
-                "WHERE o.status = 'delivered' " +
-                "AND o.createdAt < :cutoff")
+            em.createNativeQuery(
+                "UPDATE orders SET status = 'shipped' " +
+                "FROM (" +
+                "  SELECT id FROM orders " +
+                "  WHERE status = 'delivered' " +
+                "  AND created_at < :cutoff " +
+                "  ORDER BY id LIMIT 1000" +
+                ") AS batch WHERE orders.id = batch.id")
                 .setParameter("cutoff", thirtyDaysAgo)
                 .executeUpdate();
             tx.commit();

@@ -18,10 +18,10 @@
         <class>com.benchmark.scenarios.hibernate.entities.Review</class>
 
         <properties>
-            <!-- Connection -->
-            <property name="jakarta.persistence.jdbc.driver"   value="org.postgresql.Driver"/>
+            <!-- Connection via P6Spy proxy driver -->
+            <property name="jakarta.persistence.jdbc.driver"   value="com.p6spy.engine.spy.P6SpyDriver"/>
             <property name="jakarta.persistence.jdbc.url"
-                      value="jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:benchmark}"/>
+                      value="jdbc:p6spy:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:benchmark}"/>
             <property name="jakarta.persistence.jdbc.user"     value="${DB_USER:benchmark}"/>
             <property name="jakarta.persistence.jdbc.password" value="${DB_PASS:benchmark}"/>
 
@@ -32,11 +32,9 @@
             <property name="hibernate.hikari.minimumIdle"      value="2"/>
 
             <!-- Hibernate settings -->
-            <property name="hibernate.dialect"
-                      value="org.hibernate.dialect.PostgreSQLDialect"/>
             <property name="hibernate.show_sql"                value="false"/>
             <property name="hibernate.format_sql"              value="false"/>
-            <property name="hibernate.hbm2ddl.auto"           value="none"/>
+            <property name="hibernate.hbm2ddl.auto"            value="none"/>
 
             <!-- Disable second-level cache for fair benchmarking -->
             <property name="hibernate.cache.use_second_level_cache" value="false"/>

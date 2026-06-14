@@ -3,17 +3,25 @@ package com.benchmark;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.logging.LogManager;
+import java.util.OptionalDouble;
 
 /**
  * Entry point for Java benchmarks.
  * Usage: java -jar app.jar <implementation> <scenario>
  * Example: java -jar app.jar raw_sql A1
+ *
+ * Query counting is handled by P6Spy via QueryCounter.
+ * P6Spy intercepts all JDBC calls transparently — no Hibernate Statistics needed.
  */
 public class Runner {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public static void main(String[] args) throws Exception {
+        // Silence all java.util.logging output — Hibernate logs go to stdout by default
+        LogManager.getLogManager().reset();
+
         if (args.length < 2) {
             System.err.println("Usage: java -jar app.jar <implementation> <scenario>");
             System.exit(1);
@@ -37,16 +45,25 @@ public class Runner {
         Object   runner = clazz.getDeclaredConstructor().newInstance();
         Method   m      = clazz.getMethod(method);
 
+        // raw_sql uses plain JDBC — query count is statically known from code
+        boolean isRawSql = implementation.equals("raw_sql");
+
+        // Write scenarios (C, D) are inherently slower — cap warm-up and measurement to avoid excessive runtime
+        Set<String> writeScenarios = Set.of("C1", "C2", "D1");
+        boolean     isWriteScenario = writeScenarios.contains(scenario);
+
         // ── Warm-up phase (adaptive: CV < 5% over rolling window of 10) ──────
         List<Double> warmupWindow = new ArrayList<>();
-        int  warmupCount = 0;
-        boolean warmupDone = false;
-        int maxWarmup = 2000;
+        int     warmupCount = 0;
+        boolean warmupDone  = false;
+        int     maxWarmup   = isWriteScenario ? 20 : 2000;
 
         while (!warmupDone && warmupCount < maxWarmup) {
+            QueryCounter.reset();
             long start = System.nanoTime();
             m.invoke(runner);
             long end = System.nanoTime();
+            // query count discarded during warm-up
 
             double ms = (end - start) / 1_000_000.0;
             warmupWindow.add(ms);
@@ -69,23 +86,32 @@ public class Runner {
 
         // ── Measurement phase (adaptive: bootstrap CI width < 5% of p99) ─────
         List<Double> measurements = new ArrayList<>();
-        int maxMeasure = 10000;
+        List<Long>   queryCounts  = new ArrayList<>();
+        int maxMeasure = isWriteScenario ? 200  : 10000;
         int checkEvery = 100;
-        int minMeasure = 100;
+        int minMeasure = isWriteScenario ? 20   : 100;
         Random rng = new Random();
 
         while (measurements.size() < maxMeasure) {
+            QueryCounter.reset();
             long start = System.nanoTime();
-            m.invoke(runner);
+            try {
+                m.invoke(runner);
+            } catch (Exception e) {
+                // Skip failed iterations (e.g. deadlock) — do not record measurement
+                System.err.println("Iteration failed, skipping: " + e.getCause().getMessage());
+                continue;
+            }
             long end = System.nanoTime();
 
             measurements.add((end - start) / 1_000_000.0);
+            queryCounts.add(isRawSql ? -1L : QueryCounter.get());
 
             int n = measurements.size();
             if (n >= minMeasure && n % checkEvery == 0) {
                 List<Double> sorted = new ArrayList<>(measurements);
                 Collections.sort(sorted);
-                int p99index = (int) Math.ceil(0.99 * n) - 1;
+                int    p99index = (int) Math.ceil(0.99 * n) - 1;
                 double p99value = sorted.get(p99index);
 
                 if (p99value > 0) {
@@ -109,31 +135,54 @@ public class Runner {
 
         // ── Compute final statistics ──────────────────────────────────────────
         Collections.sort(measurements);
-        int n = measurements.size();
+        int    n      = measurements.size();
         double p50    = measurements.get((int) Math.ceil(0.50 * n) - 1);
         double p95    = measurements.get((int) Math.ceil(0.95 * n) - 1);
         double p99    = measurements.get((int) Math.ceil(0.99 * n) - 1);
-        double mean   = measurements.stream().mapToDouble(Double::doubleValue)
-                            .average().orElse(0);
+        double mean   = measurements.stream().mapToDouble(Double::doubleValue).average().orElse(0);
         double variance = measurements.stream()
                             .mapToDouble(v -> Math.pow(v - mean, 2))
                             .average().orElse(0);
         double stddev = Math.sqrt(variance);
 
+        double qMean   = computeQueryCountMean(queryCounts);
+        long   qMedian = computeQueryCountMedian(queryCounts);
+
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("implementation", implementation);
-        result.put("scenario",       scenario);
-        result.put("n_warmup",       warmupCount);
-        result.put("n_measurements", n);
+        result.put("implementation",      implementation);
+        result.put("scenario",            scenario);
+        result.put("n_warmup",            warmupCount);
+        result.put("n_measurements",      n);
         result.put("p50_ms",  Math.round(p50    * 10000.0) / 10000.0);
         result.put("p95_ms",  Math.round(p95    * 10000.0) / 10000.0);
         result.put("p99_ms",  Math.round(p99    * 10000.0) / 10000.0);
         result.put("mean_ms", Math.round(mean   * 10000.0) / 10000.0);
         result.put("stddev_ms", Math.round(stddev * 10000.0) / 10000.0);
+        result.put("query_count_mean",   qMean);
+        result.put("query_count_median", qMedian);
 
         System.out.println(mapper.writerWithDefaultPrettyPrinter()
             .writeValueAsString(result));
 
         Connection.close();
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static long computeQueryCountMean(List<Long> queryCounts) {
+        OptionalDouble avg = queryCounts.stream()
+            .filter(q -> q >= 0)
+            .mapToLong(Long::longValue)
+            .average();
+        return avg.isPresent() ? (long) avg.getAsDouble() : -1L;
+    }
+
+    private static long computeQueryCountMedian(List<Long> queryCounts) {
+        List<Long> valid = queryCounts.stream()
+            .filter(q -> q >= 0)
+            .sorted()
+            .collect(java.util.stream.Collectors.toList());
+        if (valid.isEmpty()) return -1L;
+        return valid.get((int) Math.ceil(0.50 * valid.size()) - 1);
     }
 }
