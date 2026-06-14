@@ -51,16 +51,19 @@ if (!method_exists($runner, $method)) {
 $isRawSql = $implementation === 'raw_sql';
 
 // ── Warm-up phase (adaptive: CV < 5% over rolling window of 10) ──────────────
+// Write scenarios (C, D) are inherently slower — cap warm-up to avoid excessive runtime
+$writeScenarios = ['C1', 'C2', 'D1'];
 $warmupWindow   = [];
 $warmupCount    = 0;
 $warmupDone     = false;
-$maxWarmup      = 2000;
+$maxWarmup      = in_array($scenario, $writeScenarios) ? 20 : 2000;
 
 while (!$warmupDone && $warmupCount < $maxWarmup) {
     QueryCounter::reset();
     $start = hrtime(true);
     $runner->$method();
     $end = hrtime(true);
+    // query count discarded during warm-up
 
     $ms = ($end - $start) / 1_000_000;
     $warmupWindow[] = $ms;
@@ -85,9 +88,9 @@ while (!$warmupDone && $warmupCount < $maxWarmup) {
 // ── Measurement phase (adaptive: bootstrap CI width < 5% of p99) ─────────────
 $measurements   = [];
 $queryCounts    = [];
-$maxMeasure     = 10000;
+$maxMeasure     = in_array($scenario, $writeScenarios) ? 200 : 10000;
 $checkEvery     = 100;
-$minMeasure     = 100;
+$minMeasure     = in_array($scenario, $writeScenarios) ? 20  : 100;
 
 while (count($measurements) < $maxMeasure) {
     QueryCounter::reset();

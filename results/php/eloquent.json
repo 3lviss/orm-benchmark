@@ -1,0 +1,138 @@
+{
+    "meta": {
+        "implementation": "eloquent",
+        "language": "PHP",
+        "driver": "Illuminate\\Database (standalone, without Laravel framework)",
+        "php_version": "8.3",
+        "eloquent_version": "11.x",
+        "notes": {
+            "query_counting": "Query count tracked via Illuminate event dispatcher (QueryExecuted event). C2 uses raw PDO directly (Eloquent does not support UPDATE FROM), so query_count is 0 — treat as N/A.",
+            "A4": "query_count_median: 2 — Eloquent issues a separate query to eager load users (withCount behaviour), not a single JOIN.",
+            "B1": "query_count_median: 4 — Eloquent eager loads each relation level separately (with() chaining), not a single JOIN.",
+            "B3": "query_count_median: 3 — Eloquent issues separate queries for tags and category relations.",
+            "C2": "query_count_mean: 0 — uses raw PDO via Capsule::getConnection()->getPdo(), bypassing the Eloquent query listener. See methodology/c2_limit_analysis.json."
+        }
+    },
+    "results": {
+        "A1": {
+            "description": "Simple SELECT by primary key via User::find()",
+            "n_warmup": 186,
+            "n_measurements": 800,
+            "p50_ms": 0.146,
+            "p95_ms": 0.1829,
+            "p99_ms": 0.193,
+            "mean_ms": 0.1459,
+            "stddev_ms": 0.0225,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "A2": {
+            "description": "Filtered list with ORDER BY and LIMIT via query builder",
+            "n_warmup": 82,
+            "n_measurements": 1100,
+            "p50_ms": 0.4453,
+            "p95_ms": 0.4956,
+            "p99_ms": 0.5245,
+            "mean_ms": 0.4461,
+            "stddev_ms": 0.0295,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "A3": {
+            "description": "N+1 diagnostic — 100 orders, lazy-loads user per order (intentional)",
+            "n_warmup": 11,
+            "n_measurements": 1100,
+            "p50_ms": 15.4024,
+            "p95_ms": 16.2345,
+            "p99_ms": 17.7874,
+            "mean_ms": 15.5075,
+            "stddev_ms": 0.7253,
+            "query_count_mean": 101,
+            "query_count_median": 101
+        },
+        "A4": {
+            "description": "Eager loading via with('user') — Eloquent issues 2 queries (orders + users batch)",
+            "n_warmup": 11,
+            "n_measurements": 8300,
+            "p50_ms": 1.8073,
+            "p95_ms": 1.8526,
+            "p99_ms": 2.0304,
+            "mean_ms": 1.8157,
+            "stddev_ms": 0.0904,
+            "query_count_mean": 2,
+            "query_count_median": 2
+        },
+        "B1": {
+            "description": "Deep eager load via with() — 4 queries (orders + items + products + categories)",
+            "n_warmup": 1287,
+            "n_measurements": 10000,
+            "p50_ms": 0.7686,
+            "p95_ms": 0.9299,
+            "p99_ms": 1.157,
+            "mean_ms": 0.7559,
+            "stddev_ms": 0.1507,
+            "query_count_mean": 4,
+            "query_count_median": 4
+        },
+        "B2": {
+            "description": "Aggregate with GROUP BY via query builder selectRaw",
+            "n_warmup": 41,
+            "n_measurements": 1700,
+            "p50_ms": 9.353,
+            "p95_ms": 10.914,
+            "p99_ms": 12.716,
+            "mean_ms": 9.5182,
+            "stddev_ms": 0.9449,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "B3": {
+            "description": "Many-to-many via with('category', 'tags') — 3 queries",
+            "n_warmup": 14,
+            "n_measurements": 10000,
+            "p50_ms": 1.7898,
+            "p95_ms": 1.8515,
+            "p99_ms": 1.9869,
+            "mean_ms": 1.7984,
+            "stddev_ms": 0.1468,
+            "query_count_mean": 3,
+            "query_count_median": 3
+        },
+        "C1": {
+            "description": "Bulk insert — 10,000 products in chunks of 500 via Product::insert()",
+            "n_warmup": 10,
+            "n_measurements": 100,
+            "p50_ms": 327.1721,
+            "p95_ms": 338.1745,
+            "p99_ms": 348.1458,
+            "mean_ms": 329.1386,
+            "stddev_ms": 5.1949,
+            "query_count_mean": 21,
+            "query_count_median": 21
+        },
+        "C2": {
+            "description": "Bulk update — UPDATE FROM subquery, LIMIT 1000 rows via raw PDO (see methodology/c2_limit_analysis.json)",
+            "n_warmup": 11,
+            "n_measurements": 200,
+            "p50_ms": 13.155,
+            "p95_ms": 14.6533,
+            "p99_ms": 15.8267,
+            "mean_ms": 13.3401,
+            "stddev_ms": 1.1685,
+            "query_count_mean": 0,
+            "query_count_median": 0
+        },
+        "D1": {
+            "description": "Unit of Work — create order with 5 items via Eloquent models, 10 queries total",
+            "n_warmup": 11,
+            "n_measurements": 100,
+            "p50_ms": 17.6193,
+            "p95_ms": 19.9026,
+            "p99_ms": 20.2209,
+            "mean_ms": 17.5271,
+            "stddev_ms": 1.4958,
+            "query_count_mean": 10,
+            "query_count_median": 10
+        }
+    }
+}

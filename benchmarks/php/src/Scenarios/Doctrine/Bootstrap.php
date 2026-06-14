@@ -17,9 +17,16 @@ class Bootstrap
     public static function entityManager(): EntityManager
     {
         if (self::$em === null) {
+            // Use /var/tmp for proxy files — writable in Docker container
+            $proxyDir = '/var/tmp/doctrine-proxies';
+            if (!is_dir($proxyDir)) {
+                mkdir($proxyDir, 0777, true);
+            }
+
             $config = ORMSetup::createAttributeMetadataConfiguration(
                 paths: [__DIR__ . '/Entities'],
                 isDevMode: false,
+                proxyDir: $proxyDir,
             );
 
             // Attach query counter middleware before creating connection

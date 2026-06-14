@@ -217,10 +217,14 @@ class Scenario
     public function c2(): int
     {
         $stmt = $this->pdo->prepare(
-            "UPDATE orders
-             SET status = 'delivered'
-             WHERE status = 'shipped'
-               AND created_at < NOW() - INTERVAL '30 days'"
+            "UPDATE orders SET status = 'delivered'
+             FROM (
+                 SELECT id FROM orders
+                 WHERE status = 'shipped'
+                   AND created_at < NOW() - INTERVAL '30 days'
+                 ORDER BY id LIMIT 1000
+             ) AS batch
+             WHERE orders.id = batch.id"
         );
         $stmt->execute();
 
@@ -229,8 +233,13 @@ class Scenario
         // Restore original status to keep dataset consistent
         $this->pdo->exec(
             "UPDATE orders SET status = 'shipped'
-             WHERE status = 'delivered'
-               AND created_at < NOW() - INTERVAL '30 days'"
+             FROM (
+                 SELECT id FROM orders
+                 WHERE status = 'delivered'
+                   AND created_at < NOW() - INTERVAL '30 days'
+                 ORDER BY id LIMIT 1000
+             ) AS batch
+             WHERE orders.id = batch.id"
         );
 
         return $affected;

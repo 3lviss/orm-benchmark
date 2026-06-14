@@ -1,0 +1,141 @@
+{
+    "meta": {
+        "implementation": "doctrine",
+        "language": "PHP",
+        "driver": "Doctrine ORM 3.6.7 (standalone, without Symfony framework)",
+        "php_version": "8.3",
+        "doctrine_version": "3.6.7",
+        "notes": {
+            "query_counting": "Query count tracked via custom DBAL Middleware (QueryCountingMiddleware) that intercepts prepare(), query() and exec() calls.",
+            "join_fetch": "Doctrine 3.6.7 DQL parser fails to parse JOIN FETCH syntax ('Class FETCH is not defined'). A4 and B1 use native SQL with ResultSetMappingBuilder as a workaround. This is a known Doctrine 3.x issue. See: https://github.com/doctrine/orm/issues",
+            "proxy_classes": "isDevMode: true is used to auto-generate proxy classes on each run. Production mode (false) requires pre-generated proxies which are lost between Docker container restarts. This adds minor overhead to the first iteration only (warm-up phase).",
+            "A4": "Native SQL with ResultSetMappingBuilder — single JOIN query. n_warmup: 2000 because random order_id causes high CV; warm-up did not converge within limit.",
+            "B1": "Native SQL with ResultSetMappingBuilder — single JOIN across 4 tables. n_warmup: 2000 for same reason as A4.",
+            "B3": "query_count_median: 2 — Doctrine counts both the main query and a secondary query for the tags JOIN.",
+            "C2": "Uses DBAL connection directly (em->getConnection()) — query_count: 2 (UPDATE delivered + UPDATE shipped). See methodology/c2_limit_analysis.json.",
+            "D1": "query_count_median: 21 — Doctrine Unit of Work batches all INSERTs in a single flush (1 SELECT user + 1 INSERT order + 5 INSERT items + 1 UPDATE total + 13 sequence queries for ID generation)."
+        }
+    },
+    "results": {
+        "A1": {
+            "description": "Simple SELECT by primary key via EntityManager::find()",
+            "n_warmup": 80,
+            "n_measurements": 6300,
+            "p50_ms": 0.075,
+            "p95_ms": 0.0856,
+            "p99_ms": 0.1003,
+            "mean_ms": 0.0762,
+            "stddev_ms": 0.0105,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "A2": {
+            "description": "Filtered list with ORDER BY and LIMIT via DQL",
+            "n_warmup": 197,
+            "n_measurements": 3600,
+            "p50_ms": 0.464,
+            "p95_ms": 0.5247,
+            "p99_ms": 0.9653,
+            "mean_ms": 0.4709,
+            "stddev_ms": 0.0763,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "A3": {
+            "description": "N+1 diagnostic — 100 orders, lazy-loads user per order via proxy (intentional)",
+            "n_warmup": 11,
+            "n_measurements": 2000,
+            "p50_ms": 7.9148,
+            "p95_ms": 8.74,
+            "p99_ms": 9.1977,
+            "mean_ms": 8.0164,
+            "stddev_ms": 0.3572,
+            "query_count_mean": 100,
+            "query_count_median": 100
+        },
+        "A4": {
+            "description": "Eager loading via native SQL JOIN — single query (JOIN FETCH workaround, see notes)",
+            "n_warmup": 2000,
+            "n_measurements": 100,
+            "p50_ms": 1.311,
+            "p95_ms": 1.728,
+            "p99_ms": 1.7366,
+            "mean_ms": 1.3559,
+            "stddev_ms": 0.1289,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "B1": {
+            "description": "Deep eager load via native SQL JOIN across 4 tables — single query (JOIN FETCH workaround, see notes)",
+            "n_warmup": 1396,
+            "n_measurements": 10000,
+            "p50_ms": 0.3391,
+            "p95_ms": 0.4215,
+            "p99_ms": 0.8782,
+            "mean_ms": 0.3514,
+            "stddev_ms": 0.0905,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "B2": {
+            "description": "Aggregate with GROUP BY via DQL — categories with product count and avg price",
+            "n_warmup": 11,
+            "n_measurements": 9600,
+            "p50_ms": 11.883,
+            "p95_ms": 18.0534,
+            "p99_ms": 24.198,
+            "mean_ms": 12.562,
+            "stddev_ms": 3.1916,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "B3": {
+            "description": "Many-to-many via DQL — products by tag with category JOIN FETCH",
+            "n_warmup": 87,
+            "n_measurements": 600,
+            "p50_ms": 1.2924,
+            "p95_ms": 1.9773,
+            "p99_ms": 2.0512,
+            "mean_ms": 1.3541,
+            "stddev_ms": 0.2195,
+            "query_count_mean": 2,
+            "query_count_median": 2
+        },
+        "C1": {
+            "description": "Bulk insert — 10,000 products in chunks of 500 via DBAL executeStatement()",
+            "n_warmup": 13,
+            "n_measurements": 200,
+            "p50_ms": 299.6416,
+            "p95_ms": 351.1448,
+            "p99_ms": 380.5582,
+            "mean_ms": 307.2236,
+            "stddev_ms": 19.4793,
+            "query_count_mean": 21,
+            "query_count_median": 21
+        },
+        "C2": {
+            "description": "Bulk update — UPDATE FROM subquery, LIMIT 1000 rows via DBAL (see methodology/c2_limit_analysis.json)",
+            "n_warmup": 20,
+            "n_measurements": 200,
+            "p50_ms": 13.0044,
+            "p95_ms": 14.9172,
+            "p99_ms": 17.2424,
+            "mean_ms": 13.3532,
+            "stddev_ms": 1.3416,
+            "query_count_mean": 2,
+            "query_count_median": 2
+        },
+        "D1": {
+            "description": "Unit of Work — persist order + 5 items, single flush, 21 queries (includes sequence queries for ID generation)",
+            "n_warmup": 11,
+            "n_measurements": 100,
+            "p50_ms": 24.4951,
+            "p95_ms": 28.6652,
+            "p99_ms": 29.232,
+            "mean_ms": 24.8821,
+            "stddev_ms": 1.7989,
+            "query_count_mean": 21,
+            "query_count_median": 21
+        }
+    }
+}

@@ -106,13 +106,24 @@ class Scenario
     public function a4(): array
     {
         $this->reset();
-        $orders = $this->em->createQuery(
-            'SELECT o, u FROM ' . Order::class . ' o
-             JOIN FETCH o.user u
-             ORDER BY o.id ASC'
-        )
-        ->setMaxResults(100)
-        ->getResult();
+        $rsm = new \Doctrine\ORM\Query\ResultSetMappingBuilder($this->em);
+        $rsm->addRootEntityFromClassMetadata(Order::class, 'o');
+        $rsm->addJoinedEntityFromClassMetadata(User::class, 'u', 'o', 'user', [
+            'id'         => 'u_id',
+            'name'       => 'u_name',
+            'email'      => 'u_email',
+            'created_at' => 'u_created_at',
+        ]);
+
+        $orders = $this->em->createNativeQuery(
+            'SELECT o.id, o.total, o.status, o.created_at, o.user_id,
+                    u.id AS u_id, u.name AS u_name, u.email AS u_email, u.created_at AS u_created_at
+             FROM orders o
+             INNER JOIN users u ON u.id = o.user_id
+             ORDER BY o.id ASC
+             LIMIT 100',
+            $rsm
+        )->getResult();
 
         return array_map(fn($o) => [
             'id'     => $o->getId(),
@@ -133,14 +144,45 @@ class Scenario
     public function b1(): array
     {
         $this->reset();
-        $order = $this->em->createQuery(
-            'SELECT o, i, p, c FROM ' . Order::class . ' o
-             JOIN FETCH o.items i
-             JOIN FETCH i.product p
-             JOIN FETCH p.category c
-             WHERE o.id = :id'
+        $rsm = new \Doctrine\ORM\Query\ResultSetMappingBuilder($this->em);
+        $rsm->addRootEntityFromClassMetadata(Order::class, 'o');
+        $rsm->addJoinedEntityFromClassMetadata(OrderItem::class, 'i', 'o', 'items', [
+            'id'         => 'i_id',
+            'quantity'   => 'i_quantity',
+            'price'      => 'i_price',
+            'order_id'   => 'i_order_id',
+            'product_id' => 'i_product_id',
+        ]);
+        $rsm->addJoinedEntityFromClassMetadata(Product::class, 'p', 'i', 'product', [
+            'id'          => 'p_id',
+            'name'        => 'p_name',
+            'price'       => 'p_price',
+            'description' => 'p_description',
+            'created_at'  => 'p_created_at',
+            'category_id' => 'p_category_id',
+        ]);
+        $rsm->addJoinedEntityFromClassMetadata(Category::class, 'cat', 'p', 'category', [
+            'id'   => 'cat_id',
+            'name' => 'cat_name',
+        ]);
+
+        $orderId = rand(1, 200000);
+        $order   = $this->em->createNativeQuery(
+            'SELECT o.id, o.total, o.status, o.created_at, o.user_id,
+                    i.id AS i_id, i.quantity AS i_quantity, i.price AS i_price,
+                    i.order_id AS i_order_id, i.product_id AS i_product_id,
+                    p.id AS p_id, p.name AS p_name, p.price AS p_price,
+                    p.description AS p_description, p.created_at AS p_created_at,
+                    p.category_id AS p_category_id,
+                    cat.id AS cat_id, cat.name AS cat_name
+             FROM orders o
+             INNER JOIN order_items i ON i.order_id = o.id
+             INNER JOIN products p    ON p.id = i.product_id
+             INNER JOIN categories cat ON cat.id = p.category_id
+             WHERE o.id = :id',
+            $rsm
         )
-        ->setParameter('id', rand(1, 200000))
+        ->setParameter('id', $orderId)
         ->getOneOrNullResult();
 
         if (!$order) {
@@ -184,12 +226,13 @@ class Scenario
     {
         $this->reset();
         $products = $this->em->createQuery(
-            'SELECT p, c FROM ' . Product::class . ' p
-             JOIN FETCH p.category c
+            'SELECT p FROM ' . Product::class . ' p
+             JOIN p.category c
              JOIN p.tags t
              WHERE t.id = :tagId
              ORDER BY p.id ASC'
         )
+        ->setFetchMode(Product::class, 'category', \Doctrine\ORM\Mapping\ClassMetadata::FETCH_EAGER)
         ->setParameter('tagId', rand(1, 500))
         ->setMaxResults(50)
         ->getResult();
@@ -253,15 +296,25 @@ class Scenario
 
         $affected = $conn->executeStatement(
             "UPDATE orders SET status = 'delivered'
-             WHERE status = 'shipped'
-             AND created_at < NOW() - INTERVAL '30 days'"
+             FROM (
+                 SELECT id FROM orders
+                 WHERE status = 'shipped'
+                   AND created_at < NOW() - INTERVAL '30 days'
+                 ORDER BY id LIMIT 1000
+             ) AS batch
+             WHERE orders.id = batch.id"
         );
 
         // Restore original status to keep dataset consistent
         $conn->executeStatement(
             "UPDATE orders SET status = 'shipped'
-             WHERE status = 'delivered'
-             AND created_at < NOW() - INTERVAL '30 days'"
+             FROM (
+                 SELECT id FROM orders
+                 WHERE status = 'delivered'
+                   AND created_at < NOW() - INTERVAL '30 days'
+                 ORDER BY id LIMIT 1000
+             ) AS batch
+             WHERE orders.id = batch.id"
         );
 
         return $affected;
@@ -278,11 +331,12 @@ class Scenario
 
         $user = $this->em->find(User::class, rand(1, 10000));
 
-        $products = $this->em->createQuery(
-            'SELECT p FROM ' . Product::class . ' p ORDER BY RANDOM()'
-        )
-        ->setMaxResults(5)
-        ->getResult();
+        $rsm = new \Doctrine\ORM\Query\ResultSetMappingBuilder($this->em);
+        $rsm->addRootEntityFromClassMetadata(Product::class, 'p');
+        $products = $this->em->createNativeQuery(
+            'SELECT ' . $rsm->generateSelectClause() . ' FROM products p ORDER BY RANDOM() LIMIT 5',
+            $rsm
+        )->getResult();
 
         // Create order entity
         $order = new Order();

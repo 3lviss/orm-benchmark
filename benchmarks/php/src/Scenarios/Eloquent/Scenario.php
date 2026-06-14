@@ -148,7 +148,7 @@ class Scenario
                     'price'       => round(rand(199, 99999) / 100, 2),
                     'description' => null,
                     'category_id' => $catIds[array_rand($catIds)],
-                    'created_at'  => now(),
+                    'created_at'  => new \DateTime(),
                 ];
             }
 
@@ -169,17 +169,37 @@ class Scenario
      */
     public function c2(): int
     {
-        $affected = Order::where('status', 'shipped')
-            ->where('created_at', '<', now()->subDays(30))
-            ->update(['status' => 'delivered']);
+        // Eloquent does not support UPDATE FROM — use PDO directly via Capsule connection
+        $pdo = \Illuminate\Database\Capsule\Manager::connection()->getPdo();
 
-        // Restore original status to keep dataset consistent
-        Order::where('status', 'delivered')
-            ->where('created_at', '<', now()->subDays(30))
-            ->update(['status' => 'shipped']);
+        $stmt = $pdo->prepare(
+            "UPDATE orders SET status = 'delivered'
+             FROM (
+                 SELECT id FROM orders
+                 WHERE status = 'shipped'
+                   AND created_at < NOW() - INTERVAL '30 days'
+                 ORDER BY id LIMIT 1000
+             ) AS batch
+             WHERE orders.id = batch.id"
+        );
+        $stmt->execute();
+        $affected = $stmt->rowCount();
+
+        // Restore original status
+        $pdo->exec(
+            "UPDATE orders SET status = 'shipped'
+             FROM (
+                 SELECT id FROM orders
+                 WHERE status = 'delivered'
+                   AND created_at < NOW() - INTERVAL '30 days'
+                 ORDER BY id LIMIT 1000
+             ) AS batch
+             WHERE orders.id = batch.id"
+        );
 
         return $affected;
     }
+
 
     /**
      * D1 — Unit of Work diagnostic.
@@ -195,7 +215,7 @@ class Scenario
             'user_id'    => $userId,
             'total'      => 0,
             'status'     => 'pending',
-            'created_at' => now(),
+            'created_at' => new \DateTime(),
         ]);
 
         $total = 0;

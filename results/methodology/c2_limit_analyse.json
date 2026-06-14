@@ -1,0 +1,21 @@
+{
+    "scenario": "C2",
+    "description": "Bulk UPDATE latency vs batch size. Measured directly in PostgreSQL via EXPLAIN ANALYZE with ROLLBACK to prevent data mutation.",
+    "methodology": "UPDATE orders SET status = 'delivered' FROM (SELECT id FROM orders WHERE status = 'shipped' AND created_at < NOW() - INTERVAL '30 days' ORDER BY id LIMIT N) AS batch WHERE orders.id = batch.id",
+    "environment": {
+        "database": "PostgreSQL 16",
+        "table_rows": 200000,
+        "matching_rows": 79643
+    },
+    "results": [
+        { "limit": 100,   "execution_time_ms": 1.733  },
+        { "limit": 500,   "execution_time_ms": 5.046  },
+        { "limit": 1000,  "execution_time_ms": 8.020  },
+        { "limit": 5000,  "execution_time_ms": 55.402 },
+        { "limit": 10000, "execution_time_ms": 107.523 }
+    ],
+    "decision": {
+        "chosen_limit": 1000,
+        "rationale": "LIMIT 1000 achieves ~8ms per iteration which is representative of a realistic bulk update workload. LIMIT 5000+ causes non-linear latency increase (55ms+) likely due to buffer pool pressure and increased lock contention. LIMIT 100 and 500 are too small to represent meaningful bulk operations. LIMIT 1000 balances benchmark stability, fairness across implementations, and representativeness."
+    }
+}

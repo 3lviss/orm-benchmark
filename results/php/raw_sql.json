@@ -1,0 +1,131 @@
+{
+    "meta": {
+        "implementation": "raw_sql",
+        "language": "PHP",
+        "driver": "PDO (pdo_pgsql)",
+        "php_version": "8.3",
+        "notes": "query_count is -1 for all scenarios — raw SQL queries are explicit in code and statically known. No listener mechanism is available via PDO."
+    },
+    "results": {
+        "A1": {
+            "description": "Simple SELECT by primary key",
+            "n_warmup": 155,
+            "n_measurements": 1200,
+            "p50_ms": 0.12,
+            "p95_ms": 0.1429,
+            "p99_ms": 0.154,
+            "mean_ms": 0.1208,
+            "stddev_ms": 0.0182,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "A2": {
+            "description": "Filtered list with ORDER BY and LIMIT",
+            "n_warmup": 35,
+            "n_measurements": 100,
+            "p50_ms": 0.3245,
+            "p95_ms": 0.3805,
+            "p99_ms": 0.3935,
+            "mean_ms": 0.3257,
+            "stddev_ms": 0.0303,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "A3": {
+            "description": "N+1 diagnostic — 100 orders, 1 query per user (intentional)",
+            "n_warmup": 20,
+            "n_measurements": 300,
+            "p50_ms": 12.2353,
+            "p95_ms": 12.4942,
+            "p99_ms": 12.6468,
+            "mean_ms": 12.2474,
+            "stddev_ms": 0.2657,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "A4": {
+            "description": "Eager loading via JOIN — orders with users in single query",
+            "n_warmup": 12,
+            "n_measurements": 600,
+            "p50_ms": 0.3253,
+            "p95_ms": 0.3625,
+            "p99_ms": 0.3843,
+            "mean_ms": 0.3255,
+            "stddev_ms": 0.0235,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "B1": {
+            "description": "Deep eager load — Order → OrderItems → Product → Category",
+            "n_warmup": 16,
+            "n_measurements": 10000,
+            "p50_ms": 0.2675,
+            "p95_ms": 0.5066,
+            "p99_ms": 0.5748,
+            "mean_ms": 0.2957,
+            "stddev_ms": 0.1046,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "B2": {
+            "description": "Aggregate with GROUP BY — categories with product count and avg price",
+            "n_warmup": 11,
+            "n_measurements": 10000,
+            "p50_ms": 7.6507,
+            "p95_ms": 8.2747,
+            "p99_ms": 9.7592,
+            "mean_ms": 7.7268,
+            "stddev_ms": 0.4378,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "B3": {
+            "description": "Many-to-many — products by tag with category",
+            "n_warmup": 20,
+            "n_measurements": 1400,
+            "p50_ms": 0.4283,
+            "p95_ms": 0.467,
+            "p99_ms": 0.4914,
+            "mean_ms": 0.4287,
+            "stddev_ms": 0.0476,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "C1": {
+            "description": "Bulk insert — 10,000 products in chunks of 500",
+            "n_warmup": 10,
+            "n_measurements": 100,
+            "p50_ms": 313.0988,
+            "p95_ms": 320.5624,
+            "p99_ms": 325.2574,
+            "mean_ms": 311.9155,
+            "stddev_ms": 5.9668,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "C2": {
+            "description": "Bulk update — UPDATE FROM subquery, LIMIT 1000 rows (see methodology/c2_limit_analysis.json)",
+            "n_warmup": 13,
+            "n_measurements": 200,
+            "p50_ms": 12.8908,
+            "p95_ms": 13.934,
+            "p99_ms": 15.8193,
+            "mean_ms": 13.0234,
+            "stddev_ms": 1.1743,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "D1": {
+            "description": "Unit of Work — fetch user, create order with 5 items, update total, rollback",
+            "n_warmup": 12,
+            "n_measurements": 200,
+            "p50_ms": 11.1614,
+            "p95_ms": 15.5196,
+            "p99_ms": 16.1159,
+            "mean_ms": 11.3407,
+            "stddev_ms": 2.586,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        }
+    }
+}

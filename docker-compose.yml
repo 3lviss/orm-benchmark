@@ -57,6 +57,8 @@ services:
         limits:
           cpus: '2'
           memory: 1G
+    volumes:
+      - doctrine-proxies:/var/tmp/doctrine-proxies
  
   # ── TypeScript: raw_sql + prisma + drizzle ───────────────
   typescript:
@@ -116,3 +118,4 @@ services:
 
 volumes:
   pgdata:
+  doctrine-proxies:

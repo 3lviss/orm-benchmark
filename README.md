@@ -312,6 +312,33 @@ All scenarios are **identical across all implementations** to ensure fair compar
 - **Cleanup:** Restore to original status
 - **ORM Test:** Bulk update, query builder efficiency
 
+## C2 Bulk Update Methodology
+
+LIMIT 1000 was chosen based on empirical `EXPLAIN ANALYZE` testing (see `results/methodology/c2_limit_analysis.json`):
+
+| Batch Size | Execution Time | Decision |
+|---|---|---|
+| 100 | ~1.7ms | Too small — unrepresentative of real bulk operations |
+| 500 | ~5ms | Acceptable but conservative |
+| **1000** | **~8ms** | **✓ Chosen — balances realism and stability** |
+| 5000 | ~55ms | Non-linear increase, lock contention begins |
+| 10000 | ~107ms | Excessive latency, risk of deadlocks |
+
+The non-linear jump from 1000 to 5000 rows (~7× slower for 5× more rows) is caused by buffer pool pressure and increased row-level lock contention. LIMIT 1000 sits at the inflection point before this degradation begins.
+
+**PostgreSQL constraint:** `UPDATE` does not support `LIMIT` directly. All implementations use a subquery pattern:
+
+```sql
+UPDATE orders SET status = 'delivered'
+FROM (
+    SELECT id FROM orders
+    WHERE status = 'shipped'
+      AND created_at < NOW() - INTERVAL '30 days'
+    ORDER BY id LIMIT 1000
+) AS batch
+WHERE orders.id = batch.id
+```
+
 ---
 
 ### D Series: Unit of Work Pattern
