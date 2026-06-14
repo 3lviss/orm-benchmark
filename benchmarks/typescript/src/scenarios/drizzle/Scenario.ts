@@ -203,20 +203,30 @@ export class Scenario {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const result = await this.db
-      .update(orders)
-      .set({ status: 'delivered' })
-      .where(
-        sql`${orders.status} = 'shipped' AND ${orders.created_at} < ${thirtyDaysAgo}`
-      );
+    // Drizzle does not support LIMIT on UPDATE — use raw SQL with UPDATE FROM subquery
+    const cutoff = thirtyDaysAgo.toISOString();
+    const result = await this.db.execute(sql`
+      UPDATE orders SET status = 'delivered'
+      FROM (
+        SELECT id FROM orders
+        WHERE status = 'shipped'
+          AND created_at < ${sql.raw("'" + cutoff + "'")}
+        ORDER BY id LIMIT 1000
+      ) AS batch
+      WHERE orders.id = batch.id
+    `);
 
     // Restore original status
-    await this.db
-      .update(orders)
-      .set({ status: 'shipped' })
-      .where(
-        sql`${orders.status} = 'delivered' AND ${orders.created_at} < ${thirtyDaysAgo}`
-      );
+    await this.db.execute(sql`
+      UPDATE orders SET status = 'shipped'
+      FROM (
+        SELECT id FROM orders
+        WHERE status = 'delivered'
+          AND created_at < ${sql.raw("'" + cutoff + "'")}
+        ORDER BY id LIMIT 1000
+      ) AS batch
+      WHERE orders.id = batch.id
+    `);
 
     return (result as any).rowCount ?? 0;
   }

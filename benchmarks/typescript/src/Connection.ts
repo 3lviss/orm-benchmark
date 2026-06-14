@@ -1,19 +1,15 @@
 import { PrismaClient } from '@prisma/client';
 import postgres from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import { QueryCounter } from './QueryCounter';
 
 /**
  * Shared database connection instances.
  * Each client is initialized once and reused across benchmark iterations.
  */
 
-// Prisma client — schema-first ORM with built-in dataloader
 let prismaInstance: PrismaClient | null = null;
 
-/**
- * Builds DATABASE_URL from individual environment variables.
- * Allows all services to use the same .env file format.
- */
 function buildDatabaseUrl(): string {
   const host = process.env.DB_HOST || 'localhost';
   const port = process.env.DB_PORT || '5432';
@@ -30,6 +26,11 @@ export function getPrismaClient(): PrismaClient {
         db: { url: buildDatabaseUrl() },
       },
     });
+    // Count every query Prisma sends — use $use middleware (Prisma 5)
+    prismaInstance.$use(async (params, next) => {
+      QueryCounter.increment();
+      return next(params);
+    });
   }
   return prismaInstance;
 }
@@ -41,7 +42,8 @@ let postgresInstance: ReturnType<typeof postgres> | null = null;
 export function getDrizzleClient() {
   if (!drizzleInstance) {
     postgresInstance = postgres(buildDatabaseUrl(), {
-      max: 10, // connection pool size
+      max: 10,
+      debug: () => { QueryCounter.increment(); },
     });
     drizzleInstance = drizzle(postgresInstance);
   }
@@ -53,14 +55,14 @@ let rawSqlInstance: ReturnType<typeof postgres> | null = null;
 
 export function getRawSqlClient() {
   if (!rawSqlInstance) {
+    // Raw SQL does not use QueryCounter — queries are explicit in code
     rawSqlInstance = postgres(buildDatabaseUrl(), {
-      max: 10, // connection pool size
+      max: 10,
     });
   }
   return rawSqlInstance;
 }
 
-// Cleanup function for graceful shutdown
 export async function closeConnections(): Promise<void> {
   if (prismaInstance) {
     await prismaInstance.$disconnect();
@@ -69,6 +71,7 @@ export async function closeConnections(): Promise<void> {
   if (postgresInstance) {
     await postgresInstance.end();
     postgresInstance = null;
+    drizzleInstance = null;
   }
   if (rawSqlInstance) {
     await rawSqlInstance.end();

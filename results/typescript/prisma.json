@@ -1,0 +1,140 @@
+{
+    "meta": {
+        "implementation": "prisma",
+        "language": "TypeScript",
+        "driver": "Prisma Client 5.x + postgres.js connection",
+        "node_version": "20",
+        "notes": {
+            "query_counting": "Query count tracked via Prisma $use middleware which intercepts every operation before execution.",
+            "A3": "query_count_median: 101 — Prisma dataloader batches user lookups but in sequential loop each findUnique triggers a separate query.",
+            "A4": "query_count_median: 1 — include: { user: true } resolves via single JOIN query.",
+            "B1": "query_count_median: 1 — nested include across 3 levels in single query.",
+            "B3": "query_count_median: 1 — Prisma resolves many-to-many via explicit ProductTag junction model with JOIN.",
+            "C1": "query_count_median: 21 — 20 createMany chunks + 1 deleteMany cleanup.",
+            "C2": "Uses $executeRaw with UPDATE FROM subquery, LIMIT 1000. Prisma updateMany does not support LIMIT. See methodology/c2_limit_analysis.json.",
+            "D1": "query_count_median: 4 — 1 SELECT products + 1 INSERT order (nested write) + 1 deleteMany items + 1 delete order."
+        }
+    },
+    "results": {
+        "A1": {
+            "description": "Simple SELECT by primary key via findUnique()",
+            "n_warmup": 48,
+            "n_measurements": 10000,
+            "p50_ms": 0.1762,
+            "p95_ms": 0.2249,
+            "p99_ms": 0.349,
+            "mean_ms": 0.1837,
+            "stddev_ms": 0.0341,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "A2": {
+            "description": "Filtered list with ORDER BY and LIMIT via findMany()",
+            "n_warmup": 91,
+            "n_measurements": 10000,
+            "p50_ms": 0.4739,
+            "p95_ms": 0.5826,
+            "p99_ms": 0.7518,
+            "mean_ms": 0.4837,
+            "stddev_ms": 0.0689,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "A3": {
+            "description": "N+1 diagnostic — 100 orders, sequential findUnique per user (intentional)",
+            "n_warmup": 11,
+            "n_measurements": 1100,
+            "p50_ms": 17.781,
+            "p95_ms": 18.3914,
+            "p99_ms": 19.7343,
+            "mean_ms": 17.843,
+            "stddev_ms": 0.5591,
+            "query_count_mean": 101,
+            "query_count_median": 101
+        },
+        "A4": {
+            "description": "Eager loading via include: { user: true } — single query",
+            "n_warmup": 21,
+            "n_measurements": 4000,
+            "p50_ms": 1.2515,
+            "p95_ms": 1.341,
+            "p99_ms": 1.639,
+            "mean_ms": 1.2655,
+            "stddev_ms": 0.0766,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "B1": {
+            "description": "Deep eager load via nested include — Order → Items → Product → Category in single query",
+            "n_warmup": 159,
+            "n_measurements": 10000,
+            "p50_ms": 0.5276,
+            "p95_ms": 0.704,
+            "p99_ms": 0.997,
+            "mean_ms": 0.5467,
+            "stddev_ms": 0.1298,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "B2": {
+            "description": "Aggregate via findMany with _count — categories with product count",
+            "n_warmup": 11,
+            "n_measurements": 100,
+            "p50_ms": 22.6805,
+            "p95_ms": 24.1736,
+            "p99_ms": 24.37,
+            "mean_ms": 22.5982,
+            "stddev_ms": 1.0085,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "B3": {
+            "description": "Many-to-many via ProductTag junction model with include: { category: true }",
+            "n_warmup": 42,
+            "n_measurements": 3000,
+            "p50_ms": 1.1767,
+            "p95_ms": 1.3271,
+            "p99_ms": 1.5519,
+            "mean_ms": 1.1935,
+            "stddev_ms": 0.0925,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "C1": {
+            "description": "Bulk insert — 10,000 products in chunks of 500 via createMany()",
+            "n_warmup": 10,
+            "n_measurements": 100,
+            "p50_ms": 451.82,
+            "p95_ms": 467.0278,
+            "p99_ms": 473.3971,
+            "mean_ms": 452.5984,
+            "stddev_ms": 7.2792,
+            "query_count_mean": 21,
+            "query_count_median": 21
+        },
+        "C2": {
+            "description": "Bulk update — $executeRaw UPDATE FROM subquery, LIMIT 1000 rows (see methodology/c2_limit_analysis.json)",
+            "n_warmup": 20,
+            "n_measurements": 200,
+            "p50_ms": 12.6017,
+            "p95_ms": 16.2091,
+            "p99_ms": 20.6379,
+            "mean_ms": 13.122,
+            "stddev_ms": 1.9921,
+            "query_count_mean": 2,
+            "query_count_median": 2
+        },
+        "D1": {
+            "description": "Unit of Work — nested create with items in single transaction, 4 queries total",
+            "n_warmup": 20,
+            "n_measurements": 200,
+            "p50_ms": 3.2123,
+            "p95_ms": 5.2608,
+            "p99_ms": 5.8661,
+            "mean_ms": 3.3191,
+            "stddev_ms": 1.1599,
+            "query_count_mean": 4,
+            "query_count_median": 4
+        }
+    }
+}

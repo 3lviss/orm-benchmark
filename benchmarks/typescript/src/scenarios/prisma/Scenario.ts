@@ -116,10 +116,11 @@ export class Scenario {
    * B3 — Many-to-many: products by tag with category.
    */
   async b3(): Promise<object[]> {
+    const tagId = Math.floor(Math.random() * 500) + 1;
     return this.client.product.findMany({
       where: {
         tags: {
-          some: { id: Math.floor(Math.random() * 500) + 1 },
+          some: { tag_id: tagId },
         },
       },
       include: { category: true },
@@ -168,24 +169,31 @@ export class Scenario {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const result = await this.client.order.updateMany({
-      where: {
-        status:     'shipped',
-        created_at: { lt: thirtyDaysAgo },
-      },
-      data: { status: 'delivered' },
-    });
+    // Prisma updateMany does not support LIMIT — use raw SQL with UPDATE FROM subquery
+    const result = await this.client.$executeRaw`
+      UPDATE orders SET status = 'delivered'
+      FROM (
+        SELECT id FROM orders
+        WHERE status = 'shipped'
+          AND created_at < ${thirtyDaysAgo}
+        ORDER BY id LIMIT 1000
+      ) AS batch
+      WHERE orders.id = batch.id
+    `;
 
-    // Restore original status to keep dataset consistent
-    await this.client.order.updateMany({
-      where: {
-        status:     'delivered',
-        created_at: { lt: thirtyDaysAgo },
-      },
-      data: { status: 'shipped' },
-    });
+    // Restore original status
+    await this.client.$executeRaw`
+      UPDATE orders SET status = 'shipped'
+      FROM (
+        SELECT id FROM orders
+        WHERE status = 'delivered'
+          AND created_at < ${thirtyDaysAgo}
+        ORDER BY id LIMIT 1000
+      ) AS batch
+      WHERE orders.id = batch.id
+    `;
 
-    return result.count;
+    return result;
   }
 
   /**

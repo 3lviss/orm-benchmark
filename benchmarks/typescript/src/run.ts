@@ -1,4 +1,5 @@
 import { closeConnections } from './Connection';
+import { QueryCounter } from './QueryCounter';
 
 /**
  * Entry point for TypeScript benchmarks.
@@ -31,16 +32,25 @@ async function main() {
     process.exit(1);
   }
 
+  // raw_sql query counts are statically known from code — skip collection
+  const isRawSql = implementation === 'raw_sql';
+
+  // Write scenarios (C, D) are inherently slower — cap warm-up and measurement
+  const writeScenarios = new Set(['C1', 'C2', 'D1']);
+  const isWriteScenario = writeScenarios.has(scenario);
+
   // ── Warm-up phase (adaptive: CV < 5% over rolling window of 10) ────────────
   const warmupWindow: number[] = [];
   let warmupCount = 0;
   let warmupDone  = false;
-  const maxWarmup = 2000;
+  const maxWarmup = isWriteScenario ? 20 : 2000;
 
   while (!warmupDone && warmupCount < maxWarmup) {
+    QueryCounter.reset();
     const start = process.hrtime.bigint();
     await runner[method]();
     const end = process.hrtime.bigint();
+    // query count discarded during warm-up
 
     const ms = Number(end - start) / 1_000_000;
     warmupWindow.push(ms);
@@ -60,16 +70,19 @@ async function main() {
 
   // ── Measurement phase (adaptive: bootstrap CI width < 5% of p99) ───────────
   const measurements: number[] = [];
-  const maxMeasure = 10000;
+  const queryCounts:  number[] = [];
+  const maxMeasure = isWriteScenario ? 200   : 10000;
   const checkEvery = 100;
-  const minMeasure = 100;
+  const minMeasure = isWriteScenario ? 20    : 100;
 
   while (measurements.length < maxMeasure) {
+    QueryCounter.reset();
     const start = process.hrtime.bigint();
     await runner[method]();
     const end = process.hrtime.bigint();
 
     measurements.push(Number(end - start) / 1_000_000);
+    queryCounts.push(isRawSql ? -1 : QueryCounter.get());
 
     const n = measurements.length;
 
@@ -107,16 +120,27 @@ async function main() {
   const variance = measurements.reduce((a, b) => a + (b - mean) ** 2, 0) / n;
   const stddev   = Math.sqrt(variance);
 
+  const validCounts = queryCounts.filter(q => q >= 0);
+  const qMean   = validCounts.length > 0
+    ? Math.round((validCounts.reduce((a, b) => a + b, 0) / validCounts.length) * 100) / 100
+    : -1;
+  const qSorted = [...validCounts].sort((a, b) => a - b);
+  const qMedian = qSorted.length > 0
+    ? qSorted[Math.ceil(0.50 * qSorted.length) - 1]
+    : -1;
+
   console.log(JSON.stringify({
     implementation,
     scenario,
-    n_warmup:       warmupCount,
-    n_measurements: n,
-    p50_ms:         Math.round(p50    * 10000) / 10000,
-    p95_ms:         Math.round(p95    * 10000) / 10000,
-    p99_ms:         Math.round(p99    * 10000) / 10000,
-    mean_ms:        Math.round(mean   * 10000) / 10000,
-    stddev_ms:      Math.round(stddev * 10000) / 10000,
+    n_warmup:           warmupCount,
+    n_measurements:     n,
+    p50_ms:             Math.round(p50    * 10000) / 10000,
+    p95_ms:             Math.round(p95    * 10000) / 10000,
+    p99_ms:             Math.round(p99    * 10000) / 10000,
+    mean_ms:            Math.round(mean   * 10000) / 10000,
+    stddev_ms:          Math.round(stddev * 10000) / 10000,
+    query_count_mean:   qMean,
+    query_count_median: qMedian,
   }, null, 2));
 
   await closeConnections();

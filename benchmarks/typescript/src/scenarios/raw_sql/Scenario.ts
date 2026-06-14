@@ -164,10 +164,18 @@ export class Scenario {
         created_at:  new Date(),
       }));
 
-      await this.sql`
-        INSERT INTO products (name, price, description, category_id, created_at)
-        SELECT * FROM ${this.sql(rows, 'name', 'price', 'description', 'category_id', 'created_at')}
-      `;
+      // Build parameterized VALUES for bulk insert
+      const values: (string | number | null)[] = [];
+      const placeholders = rows.map((r, i) => {
+        const base = i * 4;
+        values.push(r.name, r.price, r.category_id, r.created_at.toISOString());
+        return `($${base+1}, $${base+2}, NULL, $${base+3}, $${base+4})`;
+      }).join(', ');
+
+      await this.sql.unsafe(
+        `INSERT INTO products (name, price, description, category_id, created_at) VALUES ${placeholders}`,
+        values
+      );
       inserted += chunkCount;
     }
 
@@ -184,19 +192,28 @@ export class Scenario {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+    // PostgreSQL does not support LIMIT in UPDATE directly — use UPDATE FROM subquery
     const result = await this.sql`
-      UPDATE orders
-      SET status = 'delivered'
-      WHERE status = 'shipped'
-        AND created_at < ${thirtyDaysAgo}
+      UPDATE orders SET status = 'delivered'
+      FROM (
+        SELECT id FROM orders
+        WHERE status = 'shipped'
+          AND created_at < ${thirtyDaysAgo}
+        ORDER BY id LIMIT 1000
+      ) AS batch
+      WHERE orders.id = batch.id
     `;
 
     // Restore original status
     await this.sql`
-      UPDATE orders
-      SET status = 'shipped'
-      WHERE status = 'delivered'
-        AND created_at < ${thirtyDaysAgo}
+      UPDATE orders SET status = 'shipped'
+      FROM (
+        SELECT id FROM orders
+        WHERE status = 'delivered'
+          AND created_at < ${thirtyDaysAgo}
+        ORDER BY id LIMIT 1000
+      ) AS batch
+      WHERE orders.id = batch.id
     `;
 
     return result.count;

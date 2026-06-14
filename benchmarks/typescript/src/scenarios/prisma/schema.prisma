@@ -30,26 +30,36 @@ model Category {
 }
 
 model Tag {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  products Product[] @relation("ProductTags")
+  id       Int          @id @default(autoincrement())
+  name     String       @unique
+  products ProductTag[]
 
   @@map("tags")
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   name        String
-  price       Decimal     @db.Decimal(10, 2)
+  price       Decimal      @db.Decimal(10, 2)
   description String?
   category_id Int
   created_at  DateTime
-  category    Category    @relation(fields: [category_id], references: [id])
-  tags        Tag[]       @relation("ProductTags")
+  category    Category     @relation(fields: [category_id], references: [id])
+  tags        ProductTag[]
   orderItems  OrderItem[]
   reviews     Review[]
 
   @@map("products")
+}
+
+model ProductTag {
+  product_id Int
+  tag_id     Int
+  product    Product @relation(fields: [product_id], references: [id])
+  tag        Tag     @relation(fields: [tag_id],     references: [id])
+
+  @@id([product_id, tag_id])
+  @@map("product_tags")
 }
 
 model Order {
@@ -87,12 +97,4 @@ model Review {
   product    Product  @relation(fields: [product_id], references: [id])
 
   @@map("reviews")
-}
-
-model ProductTag {
-  product_id Int
-  tag_id     Int
-
-  @@id([product_id, tag_id])
-  @@map("product_tags")
 }

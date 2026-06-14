@@ -1,0 +1,140 @@
+{
+    "meta": {
+        "implementation": "drizzle",
+        "language": "TypeScript",
+        "driver": "Drizzle ORM 0.30.0 + postgres.js 3.4.0",
+        "node_version": "20",
+        "notes": {
+            "query_counting": "Query count tracked via postgres.js debug hook attached at client creation.",
+            "A3": "query_count_median: 101 — Drizzle has no dataloader, each user lookup in loop is a separate query (intentional N+1).",
+            "A4": "query_count_median: 1 — innerJoin resolves in single query.",
+            "B1": "query_count_median: 1 — chain of innerJoins across 4 tables in single query.",
+            "B3": "query_count_median: 1 — innerJoin on productTags junction table with category in single query.",
+            "C1": "query_count_median: 21 — 20 INSERT chunks + 1 DELETE cleanup.",
+            "C2": "Uses db.execute(sql`...`) with UPDATE FROM subquery, LIMIT 1000. Drizzle update() does not support LIMIT. See methodology/c2_limit_analysis.json.",
+            "D1": "query_count_median: 5 — 1 SELECT products + 1 INSERT order + 1 INSERT items (batch) + 1 DELETE items + 1 DELETE order."
+        }
+    },
+    "results": {
+        "A1": {
+            "description": "Simple SELECT by primary key via select().from().where().limit(1)",
+            "n_warmup": 84,
+            "n_measurements": 10000,
+            "p50_ms": 0.1631,
+            "p95_ms": 0.2132,
+            "p99_ms": 0.3788,
+            "mean_ms": 0.1727,
+            "stddev_ms": 0.051,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "A2": {
+            "description": "Filtered list with ORDER BY and LIMIT via select().from().where().orderBy().limit()",
+            "n_warmup": 325,
+            "n_measurements": 8500,
+            "p50_ms": 0.4204,
+            "p95_ms": 0.5324,
+            "p99_ms": 0.824,
+            "mean_ms": 0.4347,
+            "stddev_ms": 0.0889,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "A3": {
+            "description": "N+1 diagnostic — 100 orders, sequential user lookup per order (intentional)",
+            "n_warmup": 16,
+            "n_measurements": 1300,
+            "p50_ms": 15.8933,
+            "p95_ms": 18.1705,
+            "p99_ms": 19.234,
+            "mean_ms": 16.1617,
+            "stddev_ms": 1.101,
+            "query_count_mean": 101,
+            "query_count_median": 101
+        },
+        "A4": {
+            "description": "Eager loading via innerJoin(users) — orders with users in single query",
+            "n_warmup": 84,
+            "n_measurements": 10000,
+            "p50_ms": 0.4728,
+            "p95_ms": 0.7892,
+            "p99_ms": 0.9878,
+            "mean_ms": 0.5096,
+            "stddev_ms": 0.1438,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "B1": {
+            "description": "Deep eager load via chain of innerJoins — Order → Items → Product → Category in single query",
+            "n_warmup": 169,
+            "n_measurements": 10000,
+            "p50_ms": 0.3435,
+            "p95_ms": 0.5429,
+            "p99_ms": 0.8115,
+            "mean_ms": 0.3629,
+            "stddev_ms": 0.1156,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "B2": {
+            "description": "Aggregate with GROUP BY via count() and avg() — categories with product count and avg price",
+            "n_warmup": 11,
+            "n_measurements": 100,
+            "p50_ms": 23.0013,
+            "p95_ms": 24.7217,
+            "p99_ms": 25.7421,
+            "mean_ms": 23.0235,
+            "stddev_ms": 1.2464,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "B3": {
+            "description": "Many-to-many via innerJoin(productTags) with innerJoin(categories) — single query",
+            "n_warmup": 52,
+            "n_measurements": 8000,
+            "p50_ms": 0.5124,
+            "p95_ms": 0.676,
+            "p99_ms": 0.9476,
+            "mean_ms": 0.5334,
+            "stddev_ms": 0.0987,
+            "query_count_mean": 1,
+            "query_count_median": 1
+        },
+        "C1": {
+            "description": "Bulk insert — 10,000 products in chunks of 500 via insert().values()",
+            "n_warmup": 11,
+            "n_measurements": 100,
+            "p50_ms": 480.3393,
+            "p95_ms": 491.1703,
+            "p99_ms": 497.7793,
+            "mean_ms": 479.9471,
+            "stddev_ms": 7.6747,
+            "query_count_mean": 21,
+            "query_count_median": 21
+        },
+        "C2": {
+            "description": "Bulk update — db.execute(sql) UPDATE FROM subquery, LIMIT 1000 rows (see methodology/c2_limit_analysis.json)",
+            "n_warmup": 11,
+            "n_measurements": 200,
+            "p50_ms": 12.6199,
+            "p95_ms": 15.4045,
+            "p99_ms": 18.2766,
+            "mean_ms": 12.9266,
+            "stddev_ms": 1.2902,
+            "query_count_mean": 2,
+            "query_count_median": 2
+        },
+        "D1": {
+            "description": "Unit of Work — explicit inserts: order + batch items, 5 queries total",
+            "n_warmup": 20,
+            "n_measurements": 200,
+            "p50_ms": 20.7407,
+            "p95_ms": 25.8978,
+            "p99_ms": 29.1839,
+            "mean_ms": 14.8903,
+            "stddev_ms": 10.055,
+            "query_count_mean": 5,
+            "query_count_median": 5
+        }
+    }
+}
