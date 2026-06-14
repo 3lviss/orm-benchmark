@@ -1,0 +1,141 @@
+{
+    "meta": {
+        "implementation": "sqlalchemy",
+        "language": "Python",
+        "driver": "SQLAlchemy ORM 2.0.30 + psycopg2 2.9.9",
+        "python_version": "3.12",
+        "notes": {
+            "query_counting": "Query count tracked via SQLAlchemy before_cursor_execute event listener attached to the shared engine.",
+            "session": "Fresh Session created per scenario call via Session(engine). Identity map cleared between iterations.",
+            "A3": "query_count_median: 100 — SQLAlchemy lazy-loads user per order via SELECT, confirming N+1 behaviour.",
+            "A4": "query_count_median: 1 — joinedload resolves N+1 in a single query.",
+            "B1": "query_count_median: 1 — nested joinedload across 3 levels in single query. unique() required due to joined collection loading.",
+            "B3": "query_count_median: 2 — 1 query for Tag lookup + 1 query for products with joinedload on category.",
+            "C1": "query_count_median: 21 — 20 INSERT chunks (executemany per chunk) + 1 DELETE cleanup.",
+            "C2": "query_count_median: 2 — native SQL UPDATE FROM subquery (LIMIT 1000) + restore. SQLAlchemy ORM update() does not support LIMIT. See methodology/c2_limit_analysis.json.",
+            "D1": "query_count_median: 7 — 1 SELECT products + 1 INSERT order (flush) + 5 INSERT items (flush via commit) + 2 DELETE cleanup. stddev high due to variable number of products per random offset."
+        }
+    },
+    "results": {
+        "A1": {
+            "description": "Simple SELECT by primary key via Session.get()",
+            "n_warmup": 13,
+            "n_measurements": 9800,
+            "p50_ms": 0.2592,
+            "p95_ms": 0.3026,
+            "p99_ms": 0.3437,
+            "mean_ms": 0.264,
+            "stddev_ms": 0.0267,
+            "query_count_mean": 1.0,
+            "query_count_median": 1
+        },
+        "A2": {
+            "description": "Filtered list with ORDER BY and LIMIT via select(Product)",
+            "n_warmup": 63,
+            "n_measurements": 100,
+            "p50_ms": 0.5205,
+            "p95_ms": 0.5759,
+            "p99_ms": 0.5914,
+            "mean_ms": 0.5209,
+            "stddev_ms": 0.037,
+            "query_count_mean": 1.0,
+            "query_count_median": 1
+        },
+        "A3": {
+            "description": "N+1 diagnostic — 100 orders, lazy-loads user per order (intentional)",
+            "n_warmup": 13,
+            "n_measurements": 1400,
+            "p50_ms": 15.4876,
+            "p95_ms": 16.5809,
+            "p99_ms": 21.0018,
+            "mean_ms": 15.6584,
+            "stddev_ms": 0.9494,
+            "query_count_mean": 100.0,
+            "query_count_median": 100
+        },
+        "A4": {
+            "description": "Eager loading via joinedload(Order.user) — single query",
+            "n_warmup": 14,
+            "n_measurements": 10000,
+            "p50_ms": 0.9829,
+            "p95_ms": 1.0517,
+            "p99_ms": 5.6779,
+            "mean_ms": 1.0458,
+            "stddev_ms": 0.5556,
+            "query_count_mean": 1.0,
+            "query_count_median": 1
+        },
+        "B1": {
+            "description": "Deep eager load via nested joinedload — Order → Items → Product → Category in single query",
+            "n_warmup": 983,
+            "n_measurements": 100,
+            "p50_ms": 0.532,
+            "p95_ms": 0.736,
+            "p99_ms": 0.7611,
+            "mean_ms": 0.5636,
+            "stddev_ms": 0.0939,
+            "query_count_mean": 1.0,
+            "query_count_median": 1
+        },
+        "B2": {
+            "description": "Aggregate with GROUP BY via func.count() and func.avg()",
+            "n_warmup": 11,
+            "n_measurements": 300,
+            "p50_ms": 12.462,
+            "p95_ms": 18.7578,
+            "p99_ms": 19.7724,
+            "mean_ms": 13.4368,
+            "stddev_ms": 3.24,
+            "query_count_mean": 1.0,
+            "query_count_median": 1
+        },
+        "B3": {
+            "description": "Many-to-many via join(Product.tags) with joinedload(Product.category) — 2 queries",
+            "n_warmup": 76,
+            "n_measurements": 10000,
+            "p50_ms": 1.0561,
+            "p95_ms": 1.1375,
+            "p99_ms": 1.3669,
+            "mean_ms": 1.088,
+            "stddev_ms": 0.3788,
+            "query_count_mean": 2.0,
+            "query_count_median": 2
+        },
+        "C1": {
+            "description": "Bulk insert — 10,000 products in chunks of 500 via session.execute(insert(Product), rows)",
+            "n_warmup": 10,
+            "n_measurements": 100,
+            "p50_ms": 370.157,
+            "p95_ms": 379.0022,
+            "p99_ms": 381.3364,
+            "mean_ms": 370.5607,
+            "stddev_ms": 5.5838,
+            "query_count_mean": 21.0,
+            "query_count_median": 21
+        },
+        "C2": {
+            "description": "Bulk update — native SQL UPDATE FROM subquery, LIMIT 1000 rows (see methodology/c2_limit_analysis.json)",
+            "n_warmup": 11,
+            "n_measurements": 200,
+            "p50_ms": 12.5928,
+            "p95_ms": 13.8602,
+            "p99_ms": 16.0802,
+            "mean_ms": 12.8057,
+            "stddev_ms": 0.9256,
+            "query_count_mean": 2.0,
+            "query_count_median": 2
+        },
+        "D1": {
+            "description": "Unit of Work — session.add() + flush() + commit(): order with 5 items, 7 queries total",
+            "n_warmup": 20,
+            "n_measurements": 200,
+            "p50_ms": 20.4455,
+            "p95_ms": 24.9792,
+            "p99_ms": 26.9599,
+            "mean_ms": 14.8434,
+            "stddev_ms": 9.5471,
+            "query_count_mean": 7.0,
+            "query_count_median": 7
+        }
+    }
+}

@@ -5,6 +5,8 @@ import random
 import time
 import importlib
 
+from QueryCounter import QueryCounter
+
 """
 Entry point for Python benchmarks.
 Usage: python src/run.py <implementation> <scenario>
@@ -43,6 +45,16 @@ def bootstrap_ci_width_pct(
     upper = bootstrapped[int(0.975 * n_bootstrap)]
     return ((upper - lower) / p99_value) * 100
 
+def compute_query_count_stats(query_counts: list[int]) -> tuple[float, int]:
+    """Returns (mean, median) for query counts. Filters out -1 (raw_sql)."""
+    valid = [q for q in query_counts if q >= 0]
+    if not valid:
+        return -1.0, -1
+    mean   = sum(valid) / len(valid)
+    sorted_counts = sorted(valid)
+    median = sorted_counts[math.ceil(0.50 * len(sorted_counts)) - 1]
+    return round(mean, 2), median
+
 def main():
     if len(sys.argv) < 3:
         print("Usage: python run.py <implementation> <scenario>", file=sys.stderr)
@@ -73,16 +85,25 @@ def main():
 
     fn = getattr(runner, method)
 
+    # raw_sql query counts are statically known from code — skip collection
+    is_raw_sql = implementation == "raw_sql"
+
+    # Write scenarios (C, D) are inherently slower — cap warm-up and measurement to avoid excessive runtime
+    write_scenarios = {'C1', 'C2', 'D1'}
+    is_write_scenario = scenario in write_scenarios
+
     # ── Warm-up phase (adaptive: CV < 5% over rolling window of 10) ──────────
     warmup_window = []
     warmup_count  = 0
     warmup_done   = False
-    max_warmup    = 2000
+    max_warmup    = 20 if is_write_scenario else 2000
 
     while not warmup_done and warmup_count < max_warmup:
+        QueryCounter.reset()
         start = time.perf_counter_ns()
         fn()
         end   = time.perf_counter_ns()
+        # query count discarded during warm-up
 
         ms = (end - start) / 1_000_000
         warmup_window.append(ms)
@@ -97,16 +118,19 @@ def main():
 
     # ── Measurement phase (adaptive: bootstrap CI width < 5% of p99) ─────────
     measurements = []
-    max_measure  = 10000
+    query_counts = []
+    max_measure  = 200 if is_write_scenario else 10000
     check_every  = 100
-    min_measure  = 100
+    min_measure  = 20  if is_write_scenario else 100
 
     while len(measurements) < max_measure:
+        QueryCounter.reset()
         start = time.perf_counter_ns()
         fn()
         end   = time.perf_counter_ns()
 
         measurements.append((end - start) / 1_000_000)
+        query_counts.append(-1 if is_raw_sql else QueryCounter.get())
 
         n = len(measurements)
         if n >= min_measure and n % check_every == 0:
@@ -122,17 +146,22 @@ def main():
     mean   = sum(measurements) / n
     stddev = math.sqrt(sum((x - mean) ** 2 for x in measurements) / n)
 
+    q_mean, q_median = compute_query_count_stats(query_counts)
+
     print(json.dumps({
-        "implementation": implementation,
-        "scenario":       scenario,
-        "n_warmup":       warmup_count,
-        "n_measurements": n,
-        "p50_ms":         round(p50,    4),
-        "p95_ms":         round(p95,    4),
-        "p99_ms":         round(p99,    4),
-        "mean_ms":        round(mean,   4),
-        "stddev_ms":      round(stddev, 4),
+        "implementation":     implementation,
+        "scenario":           scenario,
+        "n_warmup":           warmup_count,
+        "n_measurements":     n,
+        "p50_ms":             round(p50,    4),
+        "p95_ms":             round(p95,    4),
+        "p99_ms":             round(p99,    4),
+        "mean_ms":            round(mean,   4),
+        "stddev_ms":          round(stddev, 4),
+        "query_count_mean":   q_mean,
+        "query_count_median": q_median,
     }, indent=2))
 
 if __name__ == "__main__":
     main()
+    

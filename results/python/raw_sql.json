@@ -1,0 +1,138 @@
+{
+    "meta": {
+        "implementation": "raw_sql",
+        "language": "Python",
+        "driver": "SQLAlchemy Core text() + psycopg2 2.9.9",
+        "python_version": "3.12",
+        "notes": {
+            "query_counting": "query_count is -1 for all scenarios — raw SQL queries are explicit in code and statically known. SQLAlchemy event listener is attached to the engine but raw_sql returns -1 explicitly.",
+            "engine": "Shared SQLAlchemy engine with QueuePool (pool_size=10). Raw SQL uses engine.connect() per scenario call.",
+            "C1": "10,000 inserts in chunks of 500 via SQLAlchemy Core text(). Each chunk is a separate executemany call.",
+            "C2": "UPDATE FROM subquery, LIMIT 1000 rows. See methodology/c2_limit_analysis.json.",
+            "D1": "Uses raw SQL BEGIN/COMMIT via text() to avoid nested transaction issues with SQLAlchemy connection context manager.",
+            "B1": "n_warmup: 1233 — warm-up did not converge within limit. Random order_id causes high CV."
+        }
+    },
+    "results": {
+        "A1": {
+            "description": "Simple SELECT by primary key via SQLAlchemy text()",
+            "n_warmup": 69,
+            "n_measurements": 7500,
+            "p50_ms": 0.1836,
+            "p95_ms": 0.2089,
+            "p99_ms": 0.2386,
+            "mean_ms": 0.1845,
+            "stddev_ms": 0.0341,
+            "query_count_mean": -1.0,
+            "query_count_median": -1
+        },
+        "A2": {
+            "description": "Filtered list with ORDER BY and LIMIT via text()",
+            "n_warmup": 130,
+            "n_measurements": 200,
+            "p50_ms": 0.4031,
+            "p95_ms": 0.4604,
+            "p99_ms": 0.4898,
+            "mean_ms": 0.4049,
+            "stddev_ms": 0.0291,
+            "query_count_mean": -1.0,
+            "query_count_median": -1
+        },
+        "A3": {
+            "description": "N+1 diagnostic — 100 orders, 1 query per user (intentional)",
+            "n_warmup": 11,
+            "n_measurements": 100,
+            "p50_ms": 7.8866,
+            "p95_ms": 8.133,
+            "p99_ms": 8.234,
+            "mean_ms": 7.877,
+            "stddev_ms": 0.1837,
+            "query_count_mean": -1.0,
+            "query_count_median": -1
+        },
+        "A4": {
+            "description": "Eager loading via INNER JOIN — orders with users in single query",
+            "n_warmup": 11,
+            "n_measurements": 100,
+            "p50_ms": 0.5205,
+            "p95_ms": 0.563,
+            "p99_ms": 0.5871,
+            "mean_ms": 0.5247,
+            "stddev_ms": 0.0201,
+            "query_count_mean": -1.0,
+            "query_count_median": -1
+        },
+        "B1": {
+            "description": "Deep eager load — Order → OrderItems → Product → Category via single JOIN",
+            "n_warmup": 1233,
+            "n_measurements": 10000,
+            "p50_ms": 0.3224,
+            "p95_ms": 0.4674,
+            "p99_ms": 0.5982,
+            "mean_ms": 0.3291,
+            "stddev_ms": 0.1191,
+            "query_count_mean": -1.0,
+            "query_count_median": -1
+        },
+        "B2": {
+            "description": "Aggregate with GROUP BY — categories with product count and avg price",
+            "n_warmup": 11,
+            "n_measurements": 100,
+            "p50_ms": 22.065,
+            "p95_ms": 23.726,
+            "p99_ms": 23.8675,
+            "mean_ms": 22.0819,
+            "stddev_ms": 1.2065,
+            "query_count_mean": -1.0,
+            "query_count_median": -1
+        },
+        "B3": {
+            "description": "Many-to-many — products by tag with category via JOIN",
+            "n_warmup": 19,
+            "n_measurements": 1100,
+            "p50_ms": 0.5248,
+            "p95_ms": 0.572,
+            "p99_ms": 0.6032,
+            "mean_ms": 0.527,
+            "stddev_ms": 0.0263,
+            "query_count_mean": -1.0,
+            "query_count_median": -1
+        },
+        "C1": {
+            "description": "Bulk insert — 10,000 products in chunks of 500 via SQLAlchemy text() executemany",
+            "n_warmup": 10,
+            "n_measurements": 100,
+            "p50_ms": 696.8407,
+            "p95_ms": 713.2884,
+            "p99_ms": 726.287,
+            "mean_ms": 697.6355,
+            "stddev_ms": 9.4704,
+            "query_count_mean": -1.0,
+            "query_count_median": -1
+        },
+        "C2": {
+            "description": "Bulk update — UPDATE FROM subquery, LIMIT 1000 rows (see methodology/c2_limit_analysis.json)",
+            "n_warmup": 11,
+            "n_measurements": 200,
+            "p50_ms": 12.6697,
+            "p95_ms": 14.8319,
+            "p99_ms": 16.6305,
+            "mean_ms": 12.9146,
+            "stddev_ms": 1.0388,
+            "query_count_mean": -1.0,
+            "query_count_median": -1
+        },
+        "D1": {
+            "description": "Unit of Work — explicit transaction via BEGIN/COMMIT: fetch products, insert order + 5 items, cleanup",
+            "n_warmup": 20,
+            "n_measurements": 200,
+            "p50_ms": 12.0474,
+            "p95_ms": 16.0803,
+            "p99_ms": 17.2709,
+            "mean_ms": 9.5556,
+            "stddev_ms": 5.6856,
+            "query_count_mean": -1.0,
+            "query_count_median": -1
+        }
+    }
+}

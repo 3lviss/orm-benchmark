@@ -173,23 +173,34 @@ class Scenario:
         return inserted
 
     def c2(self):
-        """C2 — Bulk update: update status of old shipped orders."""
+        """C2 — Bulk update: UPDATE FROM subquery, LIMIT 1000 rows.
+        PostgreSQL does not support LIMIT in UPDATE directly — use subquery pattern.
+        See methodology/c2_limit_analysis.json for batch size justification.
+        """
         with self.engine.connect() as conn:
             result = conn.execute(text("""
-                UPDATE orders
-                SET status = 'delivered'
-                WHERE status = 'shipped'
-                  AND created_at < NOW() - INTERVAL '30 days'
+                UPDATE orders SET status = 'delivered'
+                FROM (
+                    SELECT id FROM orders
+                    WHERE status = 'shipped'
+                      AND created_at < NOW() - INTERVAL '30 days'
+                    ORDER BY id LIMIT 1000
+                ) AS batch
+                WHERE orders.id = batch.id
             """))
             conn.commit()
             affected = result.rowcount
 
             # Restore original status
             conn.execute(text("""
-                UPDATE orders
-                SET status = 'shipped'
-                WHERE status = 'delivered'
-                  AND created_at < NOW() - INTERVAL '30 days'
+                UPDATE orders SET status = 'shipped'
+                FROM (
+                    SELECT id FROM orders
+                    WHERE status = 'delivered'
+                      AND created_at < NOW() - INTERVAL '30 days'
+                    ORDER BY id LIMIT 1000
+                ) AS batch
+                WHERE orders.id = batch.id
             """))
             conn.commit()
 
@@ -221,41 +232,44 @@ class Scenario:
                     "price":      price,
                 })
 
-            # Explicit transaction
-            with conn.begin():
-                order = conn.execute(
+            # Insert order and items in one transaction
+            conn.execute(text("BEGIN"))
+            order = conn.execute(
+                text("""
+                    INSERT INTO orders (user_id, total, status, created_at)
+                    VALUES (:user_id, :total, 'pending', NOW())
+                    RETURNING id
+                """),
+                {"user_id": user_id, "total": total}
+            ).fetchone()
+
+            order_id = order.id
+
+            for item in items:
+                conn.execute(
                     text("""
-                        INSERT INTO orders (user_id, total, status, created_at)
-                        VALUES (:user_id, :total, 'pending', NOW())
-                        RETURNING id
+                        INSERT INTO order_items (order_id, product_id, quantity, price)
+                        VALUES (:order_id, :product_id, :quantity, :price)
                     """),
-                    {"user_id": user_id, "total": total}
-                ).fetchone()
-
-                order_id = order.id
-
-                for item in items:
-                    conn.execute(
-                        text("""
-                            INSERT INTO order_items (order_id, product_id, quantity, price)
-                            VALUES (:order_id, :product_id, :quantity, :price)
-                        """),
-                        {"order_id": order_id, **item}
-                    )
+                    {"order_id": order_id, **item}
+                )
+            conn.execute(text("COMMIT"))
 
             # Clean up
-            with conn.begin():
-                conn.execute(
-                    text("DELETE FROM order_items WHERE order_id = :id"),
-                    {"id": order_id}
-                )
-                conn.execute(
-                    text("DELETE FROM orders WHERE id = :id"),
-                    {"id": order_id}
-                )
+            conn.execute(text("BEGIN"))
+            conn.execute(
+                text("DELETE FROM order_items WHERE order_id = :id"),
+                {"id": order_id}
+            )
+            conn.execute(
+                text("DELETE FROM orders WHERE id = :id"),
+                {"id": order_id}
+            )
+            conn.execute(text("COMMIT"))
 
         return {
             "order_id":    order_id,
             "total":       total,
             "items_count": len(items),
         }
+    

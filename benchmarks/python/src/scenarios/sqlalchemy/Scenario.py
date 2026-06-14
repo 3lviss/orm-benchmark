@@ -105,7 +105,7 @@ class Scenario:
                     .joinedload(Product.category)
                 )
                 .where(Order.id == random.randint(1, 200000))
-            ).scalar_one_or_none()
+            ).unique().scalar_one_or_none()
 
             if not order:
                 return []
@@ -203,26 +203,38 @@ class Scenario:
         return inserted
 
     def c2(self):
-        """C2 — Bulk update using Core UPDATE for performance."""
+        """C2 — Bulk update: UPDATE FROM subquery, LIMIT 1000 rows.
+        SQLAlchemy ORM update does not support LIMIT — use text() with native SQL.
+        See methodology/c2_limit_analysis.json for batch size justification.
+        """
+        from sqlalchemy import text
         thirty_days_ago = datetime.now() - timedelta(days=30)
 
         with self._session() as session:
-            result = session.execute(
-                update(Order)
-                .where(Order.status == "shipped")
-                .where(Order.created_at < thirty_days_ago)
-                .values(status="delivered")
-            )
+            result = session.execute(text("""
+                UPDATE orders SET status = 'delivered'
+                FROM (
+                    SELECT id FROM orders
+                    WHERE status = 'shipped'
+                      AND created_at < :cutoff
+                    ORDER BY id LIMIT 1000
+                ) AS batch
+                WHERE orders.id = batch.id
+            """), {"cutoff": thirty_days_ago})
             session.commit()
             affected = result.rowcount
 
             # Restore original status
-            session.execute(
-                update(Order)
-                .where(Order.status == "delivered")
-                .where(Order.created_at < thirty_days_ago)
-                .values(status="shipped")
-            )
+            session.execute(text("""
+                UPDATE orders SET status = 'shipped'
+                FROM (
+                    SELECT id FROM orders
+                    WHERE status = 'delivered'
+                      AND created_at < :cutoff
+                    ORDER BY id LIMIT 1000
+                ) AS batch
+                WHERE orders.id = batch.id
+            """), {"cutoff": thirty_days_ago})
             session.commit()
 
         return affected
@@ -281,3 +293,4 @@ class Scenario:
             "total":       total,
             "items_count": len(products),
         }
+    
