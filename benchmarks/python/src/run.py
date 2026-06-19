@@ -1,4 +1,5 @@
 import sys
+import os
 import json
 import math
 import random
@@ -147,6 +148,17 @@ def main():
     stddev = math.sqrt(sum((x - mean) ** 2 for x in measurements) / n)
 
     q_mean, q_median = compute_query_count_stats(query_counts)
+
+    # ── Export raw measurements (optional) ───────────────────────────────────
+    # Enabled by setting RAW_OUTPUT_DIR environment variable.
+    # Used by analysis/analyse.py for exact Mann-Whitney U tests.
+    # Output: {RAW_OUTPUT_DIR}/{scenario}.json
+    raw_output_dir = os.environ.get('RAW_OUTPUT_DIR')
+    if raw_output_dir:
+        os.makedirs(raw_output_dir, exist_ok=True)
+        raw_file = os.path.join(raw_output_dir, f'{scenario}.json')
+        with open(raw_file, 'w') as f:
+            json.dump([round(m, 6) for m in measurements], f)
 
     print(json.dumps({
         "implementation":     implementation,
