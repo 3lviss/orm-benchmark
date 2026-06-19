@@ -5,6 +5,8 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.LogManager;
 import java.util.OptionalDouble;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * Entry point for Java benchmarks.
@@ -160,6 +162,26 @@ public class Runner {
         result.put("stddev_ms", Math.round(stddev * 10000.0) / 10000.0);
         result.put("query_count_mean",   qMean);
         result.put("query_count_median", qMedian);
+
+        // ── Export raw measurements (optional) ──────────────────────────────
+        // Enabled by setting RAW_OUTPUT_DIR environment variable.
+        // Used by analysis/analyse.py for exact Mann-Whitney U tests.
+        // Output: {RAW_OUTPUT_DIR}/{scenario}.json
+        String rawOutputDir = System.getenv("RAW_OUTPUT_DIR");
+        if (rawOutputDir != null && !rawOutputDir.isEmpty()) {
+            java.nio.file.Path rawDir = Paths.get(rawOutputDir);
+            Files.createDirectories(rawDir);
+            java.nio.file.Path rawFile = rawDir.resolve(scenario + ".json");
+            // Write unsorted raw measurements (preserve original order)
+            // Sort a copy for stats but keep originals for distribution analysis
+            StringBuilder sb = new StringBuilder("[");
+            for (int i = 0; i < measurements.size(); i++) {
+                sb.append(Math.round(measurements.get(i) * 1000000.0) / 1000000.0);
+                if (i < measurements.size() - 1) sb.append(",");
+            }
+            sb.append("]");
+            Files.writeString(rawFile, sb.toString());
+        }
 
         System.out.println(mapper.writerWithDefaultPrettyPrinter()
             .writeValueAsString(result));
