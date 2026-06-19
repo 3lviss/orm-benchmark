@@ -16,6 +16,11 @@ use Benchmark\QueryCounter;
  * Query counting:
  * - raw_sql: returns -1 (queries are explicit and statically known from code)
  * - eloquent/doctrine: returns actual query count via listeners/middleware
+ *
+ * Raw export (optional):
+ * - Set RAW_OUTPUT_DIR env var to export raw measurement arrays
+ * - Output: {RAW_OUTPUT_DIR}/{implementation}_{scenario}.json
+ * - Used by analysis/analyse.py for exact Mann-Whitney U tests
  */
 $implementation = strtolower($argv[1] ?? 'raw_sql');
 $scenario       = strtoupper($argv[2] ?? 'A1');
@@ -149,6 +154,22 @@ sort($qSorted);
 $qMedian     = count($qSorted) > 0
     ? $qSorted[(int) ceil(0.50 * count($qSorted)) - 1]
     : -1;
+
+// ── Export raw measurements (optional) ───────────────────────────────────────
+// Enabled by setting RAW_OUTPUT_DIR environment variable.
+// Used by analysis/analyse.py for exact Mann-Whitney U tests.
+// Output: {RAW_OUTPUT_DIR}/{scenario}.json
+$rawOutputDir = getenv('RAW_OUTPUT_DIR');
+if ($rawOutputDir) {
+    if (!is_dir($rawOutputDir)) {
+        mkdir($rawOutputDir, 0777, true);
+    }
+    $rawFile = rtrim($rawOutputDir, '/') . "/{$scenario}.json";
+    file_put_contents($rawFile, json_encode(array_map(
+        fn($v) => round($v, 6),
+        $measurements
+    )));
+}
 
 echo json_encode([
     'implementation'     => $implementation,
