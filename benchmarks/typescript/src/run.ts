@@ -1,5 +1,7 @@
 import { closeConnections } from './Connection';
 import { QueryCounter } from './QueryCounter';
+import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * Entry point for TypeScript benchmarks.
@@ -128,6 +130,19 @@ async function main() {
   const qMedian = qSorted.length > 0
     ? qSorted[Math.ceil(0.50 * qSorted.length) - 1]
     : -1;
+
+  // ── Export raw measurements (optional) ─────────────────────────────────
+  // Enabled by setting RAW_OUTPUT_DIR environment variable.
+  // Used by analysis/analyse.py for exact Mann-Whitney U tests.
+  // Output: {RAW_OUTPUT_DIR}/{scenario}.json
+  const rawOutputDir = process.env.RAW_OUTPUT_DIR;
+  if (rawOutputDir) {
+    fs.mkdirSync(rawOutputDir, { recursive: true });
+    const rawFile = path.join(rawOutputDir, `${scenario}.json`);
+    fs.writeFileSync(rawFile, JSON.stringify(
+      measurements.map(m => Math.round(m * 1000000) / 1000000)
+    ));
+  }
 
   console.log(JSON.stringify({
     implementation,
