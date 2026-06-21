@@ -46,23 +46,15 @@ export class Scenario {
     const orders = await this.client.order.findMany({
       orderBy: { id: 'asc' },
       take: 100,
+      include: { user: true },
     });
 
-    // Accessing user for each order — Prisma dataloader batches these
-    const results = [];
-    for (const order of orders) {
-      const user = await this.client.user.findUnique({
-        where: { id: order.user_id },
-      });
-      results.push({
-        order_id: order.id,
-        total:    order.total,
-        status:   order.status,
-        user:     user,
-      });
-    }
-
-    return results;
+    return orders.map(order => ({
+      order_id: order.id,
+      total:    order.total,
+      status:   order.status,
+      user:     order.user,
+    }));
   }
 
   /**

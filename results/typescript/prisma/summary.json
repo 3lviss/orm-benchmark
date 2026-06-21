@@ -41,16 +41,16 @@
             "query_count_median": 1
         },
         "A3": {
-            "description": "N+1 diagnostic — 100 orders, sequential findUnique per user (intentional)",
-            "n_warmup": 11,
-            "n_measurements": 1100,
-            "p50_ms": 17.781,
-            "p95_ms": 18.3914,
-            "p99_ms": 19.7343,
-            "mean_ms": 17.843,
-            "stddev_ms": 0.5591,
-            "query_count_mean": 101,
-            "query_count_median": 101
+            "description": "N+1 resolution via include — 100 orders with users in single JOIN query (idiomatic Prisma, avoids N+1 by default)",
+            "n_warmup": 21,
+            "n_measurements": 2500,
+            "p50_ms": 1.2077,
+            "p95_ms": 1.4053,
+            "p99_ms": 1.686,
+            "mean_ms": 1.2311,
+            "stddev_ms": 0.1223,
+            "query_count_mean": 1,
+            "query_count_median": 1
         },
         "A4": {
             "description": "Eager loading via include: { user: true } — single query",
