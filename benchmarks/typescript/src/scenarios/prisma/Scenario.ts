@@ -36,12 +36,12 @@ export class Scenario {
   }
 
   /**
- * A3 — N+1 diagnostic: load 100 orders then access user for each.
- * Intentionally uses sequential access without explicit eager loading
- * to test N+1 behaviour in default configuration.
- * Sequential loop ensures fair comparison with PHP, Python, and Java
- * implementations which cannot parallelize queries.
- */
+   * A3 — N+1 diagnostic: load 100 orders then access user for each.
+   * Uses include: { user: true } (explicit eager loading, same as A4),
+   * not default lazy access as in the other ORM implementations.
+   * Prisma 5 loads the relation with a second batched query
+   * (users WHERE id IN (...)), not a JOIN: 2 SQL statements.
+   */
   async a3(): Promise<object[]> {
     const orders = await this.client.order.findMany({
       orderBy: { id: 'asc' },
