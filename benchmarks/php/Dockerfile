@@ -14,7 +14,7 @@ COPY --from=composer:2.10.1 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 
 # Copy composer files first for layer caching
-COPY composer.json .
+COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Copy source code and entrypoint

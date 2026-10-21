@@ -5,6 +5,7 @@ WORKDIR /build
 # Copy pom.xml first for layer caching
 COPY pom.xml .
 RUN mvn dependency:go-offline -q
+RUN mvn dependency:list -q -DincludeScope=runtime -DoutputFile=dependencies.txt
 
 # Copy source and build
 COPY src/ src/
@@ -16,5 +17,6 @@ FROM eclipse-temurin:21.0.11_10-jre-alpine
 WORKDIR /app
 
 COPY --from=builder /build/target/orm-benchmark-java-1.0.0-jar-with-dependencies.jar app.jar
+COPY --from=builder /build/dependencies.txt dependencies.txt
 
 CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

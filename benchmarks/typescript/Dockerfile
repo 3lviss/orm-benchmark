@@ -5,8 +5,8 @@ WORKDIR /app
 RUN apk add --no-cache openssl openssl-dev libc6-compat
 
 # Copy package files for layer caching
-COPY package.json package-lock.json* ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 
 # Copy Prisma schema and generate client
 COPY src/scenarios/prisma/schema.prisma src/scenarios/prisma/schema.prisma

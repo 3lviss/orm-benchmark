@@ -1,3 +1,9 @@
 sqlalchemy==2.0.30
 psycopg2-binary==2.9.13
 faker==24.0.0
+
+# transitive (pinned for reproducibility)
+greenlet==3.5.6
+python-dateutil==2.9.0.post0
+six==1.17.0
+typing_extensions==4.16.0
