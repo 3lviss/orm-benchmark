@@ -1,4 +1,4 @@
-FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+FROM maven:3.9.13-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /build
 
@@ -11,7 +11,7 @@ COPY src/ src/
 RUN mvn package -DskipTests -q
 
 # ── Runtime image ─────────────────────────────────────────────────────────────
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21.0.11_10-jre-alpine
 
 WORKDIR /app
 

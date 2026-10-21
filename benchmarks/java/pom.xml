@@ -21,14 +21,14 @@
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>6.4.4.Final</version>
+            <version>6.6.59.Final</version>
         </dependency>
 
         <!-- Hibernate HikariCP integration -->
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-hikaricp</artifactId>
-            <version>6.4.4.Final</version>
+            <version>6.6.59.Final</version>
         </dependency>
 
         <!-- PostgreSQL JDBC driver -->

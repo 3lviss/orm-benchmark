@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20.20.2-alpine3.23
 WORKDIR /app
 
 # Install OpenSSL for Prisma engine compatibility

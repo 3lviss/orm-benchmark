@@ -7,16 +7,16 @@
     "run": "node dist/run.js"
   },
   "dependencies": {
-    "@prisma/client": "^5.0.0",
-    "drizzle-orm": "^0.30.0",
-    "postgres": "^3.4.0",
-    "pg": "^8.11.0"
+    "@prisma/client": "5.22.0",
+    "drizzle-orm": "0.30.10",
+    "postgres": "3.4.9",
+    "pg": "8.22.0"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.0",
-    "prisma": "^5.0.0",
-    "typescript": "^5.0.0",
-    "drizzle-kit": "^0.20.0"
+    "@types/pg": "8.20.0",
+    "prisma": "5.22.0",
+    "typescript": "5.9.3",
+    "drizzle-kit": "0.20.18"
   },
   "prisma": {
     "schema": "src/scenarios/prisma/schema.prisma"

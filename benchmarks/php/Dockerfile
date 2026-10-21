@@ -1,4 +1,4 @@
-FROM php:8.3-cli
+FROM php:8.3.31-cli-trixie
 
 # Install PostgreSQL extension and dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.10.1 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
