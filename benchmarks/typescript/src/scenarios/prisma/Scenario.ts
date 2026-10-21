@@ -92,16 +92,31 @@ export class Scenario {
   /**
    * B2 — Aggregate with GROUP BY.
    * Product count and average price per category.
+   * Prisma cannot aggregate across a relation in one query, so this uses
+   * groupBy on products and merges with categories in code (2 queries).
    */
   async b2(): Promise<object[]> {
-    return this.client.category.findMany({
-      include: {
-        _count: { select: { products: true } },
-      },
-      orderBy: {
-        products: { _count: 'desc' },
-      },
+    const categories = await this.client.category.findMany({
+      select: { id: true, name: true },
     });
+    const stats = await this.client.product.groupBy({
+      by: ['category_id'],
+      _count: { id: true },
+      _avg: { price: true },
+    });
+
+    const byCategory = new Map(stats.map((s) => [s.category_id, s]));
+    return categories
+      .map((c) => {
+        const s = byCategory.get(c.id);
+        return {
+          id: c.id,
+          name: c.name,
+          product_count: s?._count.id ?? 0,
+          avg_price: s?._avg.price ?? null,
+        };
+      })
+      .sort((a, b) => b.product_count - a.product_count);
   }
 
   /**
