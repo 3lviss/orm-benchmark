@@ -123,6 +123,7 @@ def main():
     max_measure  = 200 if is_write_scenario else 10000
     check_every  = 100
     min_measure  = 20  if is_write_scenario else 100
+    converged    = False  # True if the CI criterion stopped measurement, False if the cap was hit
 
     while len(measurements) < max_measure:
         QueryCounter.reset()
@@ -136,6 +137,7 @@ def main():
         n = len(measurements)
         if n >= min_measure and n % check_every == 0:
             if bootstrap_ci_width_pct(measurements) < 5.0:
+                converged = True
                 break
 
     # ── Compute final statistics ──────────────────────────────────────────────
@@ -164,7 +166,9 @@ def main():
         "implementation":     implementation,
         "scenario":           scenario,
         "n_warmup":           warmup_count,
+        "warmup_converged":   warmup_done,
         "n_measurements":     n,
+        "converged":          converged,
         "p50_ms":             round(p50,    4),
         "p95_ms":             round(p95,    4),
         "p99_ms":             round(p99,    4),

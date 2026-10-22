@@ -96,6 +96,7 @@ $queryCounts    = [];
 $maxMeasure     = in_array($scenario, $writeScenarios) ? 200 : 10000;
 $checkEvery     = 100;
 $minMeasure     = in_array($scenario, $writeScenarios) ? 20  : 100;
+$converged      = false; // true if the CI criterion stopped measurement, false if the cap was hit
 
 while (count($measurements) < $maxMeasure) {
     QueryCounter::reset();
@@ -129,6 +130,7 @@ while (count($measurements) < $maxMeasure) {
             $ciWidth = (($upper - $lower) / $p99value) * 100;
 
             if ($ciWidth < 5.0) {
+                $converged = true;
                 break;
             }
         }
@@ -175,7 +177,9 @@ echo json_encode([
     'implementation'     => $implementation,
     'scenario'           => $scenario,
     'n_warmup'           => $warmupCount,
+    'warmup_converged'   => $warmupDone,
     'n_measurements'     => $n,
+    'converged'          => $converged,
     'p50_ms'             => round($p50, 4),
     'p95_ms'             => round($p95, 4),
     'p99_ms'             => round($p99, 4),

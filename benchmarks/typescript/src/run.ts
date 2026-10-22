@@ -76,6 +76,7 @@ async function main() {
   const maxMeasure = isWriteScenario ? 200   : 10000;
   const checkEvery = 100;
   const minMeasure = isWriteScenario ? 20    : 100;
+  let converged    = false;  // true if the CI criterion stopped measurement, false if the cap was hit
 
   while (measurements.length < maxMeasure) {
     QueryCounter.reset();
@@ -107,7 +108,7 @@ async function main() {
         const upper   = bootstrapP99s[Math.floor(0.975 * 500)];
         const ciWidth = ((upper - lower) / p99value) * 100;
 
-        if (ciWidth < 5.0) break;
+        if (ciWidth < 5.0) { converged = true; break; }
       }
     }
   }
@@ -148,7 +149,9 @@ async function main() {
     implementation,
     scenario,
     n_warmup:           warmupCount,
+    warmup_converged:   warmupDone,
     n_measurements:     n,
+    converged,
     p50_ms:             Math.round(p50    * 10000) / 10000,
     p95_ms:             Math.round(p95    * 10000) / 10000,
     p99_ms:             Math.round(p99    * 10000) / 10000,

@@ -92,6 +92,7 @@ public class Runner {
         int maxMeasure = isWriteScenario ? 200  : 10000;
         int checkEvery = 100;
         int minMeasure = isWriteScenario ? 20   : 100;
+        boolean converged = false; // true if the CI criterion stopped measurement, false if the cap was hit
         Random rng = new Random();
 
         while (measurements.size() < maxMeasure) {
@@ -130,7 +131,7 @@ public class Runner {
                     double lower   = bootstrapP99s.get((int) (0.025 * 500));
                     double upper   = bootstrapP99s.get((int) (0.975 * 500));
                     double ciWidth = ((upper - lower) / p99value) * 100;
-                    if (ciWidth < 5.0) break;
+                    if (ciWidth < 5.0) { converged = true; break; }
                 }
             }
         }
@@ -154,7 +155,9 @@ public class Runner {
         result.put("implementation",      implementation);
         result.put("scenario",            scenario);
         result.put("n_warmup",            warmupCount);
+        result.put("warmup_converged",    warmupDone);
         result.put("n_measurements",      n);
+        result.put("converged",           converged);
         result.put("p50_ms",  Math.round(p50    * 10000.0) / 10000.0);
         result.put("p95_ms",  Math.round(p95    * 10000.0) / 10000.0);
         result.put("p99_ms",  Math.round(p99    * 10000.0) / 10000.0);
