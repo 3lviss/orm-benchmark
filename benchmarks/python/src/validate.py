@@ -9,7 +9,6 @@ import psycopg2
 import psycopg2.extras
 
 """
-Validation entry point (docs/PLAN_REPO.md 2.5) — not used for timing.
 Usage: python src/validate.py <implementation> [scenario ...]
 
 random.randint and random.choice are replaced so every implementation receives

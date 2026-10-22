@@ -2,7 +2,6 @@ import postgres from 'postgres';
 import { closeConnections } from './Connection';
 
 /**
- * Validation entry point (docs/PLAN_REPO.md 2.5) — not used for timing.
  * Usage: node dist/validate.js <implementation> [scenario ...]
  *
  * Math.random is replaced with a constant (VALIDATE_U, default 0.1) so every

@@ -20,7 +20,6 @@ use Benchmark\QueryCounter;
  * Raw export (optional):
  * - Set RAW_OUTPUT_DIR env var to export raw measurement arrays
  * - Output: {RAW_OUTPUT_DIR}/{implementation}_{scenario}.json
- * - Used by analysis/analyse.py for exact Mann-Whitney U tests
  */
 $implementation = strtolower($argv[1] ?? 'raw_sql');
 $scenario       = strtoupper($argv[2] ?? 'A1');
@@ -159,7 +158,6 @@ $qMedian     = count($qSorted) > 0
 
 // ── Export raw measurements (optional) ───────────────────────────────────────
 // Enabled by setting RAW_OUTPUT_DIR environment variable.
-// Used by analysis/analyse.py for exact Mann-Whitney U tests.
 // Output: {RAW_OUTPUT_DIR}/{scenario}.json
 $rawOutputDir = getenv('RAW_OUTPUT_DIR');
 if ($rawOutputDir) {

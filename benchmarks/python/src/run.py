@@ -153,7 +153,6 @@ def main():
 
     # ── Export raw measurements (optional) ───────────────────────────────────
     # Enabled by setting RAW_OUTPUT_DIR environment variable.
-    # Used by analysis/analyse.py for exact Mann-Whitney U tests.
     # Output: {RAW_OUTPUT_DIR}/{scenario}.json
     raw_output_dir = os.environ.get('RAW_OUTPUT_DIR')
     if raw_output_dir:

@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 """
-Compares validation output of all implementations (docs/PLAN_REPO.md 2.5).
-
 Input:  JSON lines produced by the validate entry points (one line per
         implementation x scenario), see scripts/validate.sh.
 Output: results/validation.json and a Markdown summary on stdout.
@@ -20,7 +18,6 @@ from collections import Counter, defaultdict
 SCENARIOS = ["A1", "A2", "A3", "A4", "B1", "B2", "B3", "C1", "C2", "D1"]
 TX_CONTROL = ("BEGIN", "COMMIT", "ROLLBACK", "SAVEPOINT", "RELEASE", "START TRANSACTION")
 
-# Documented deviations (docs/PLAN_REPO.md 2.2) — reported as warnings, not errors.
 EXPECTED = {
     ("D1", "php/raw_sql"):  "ORDER BY RANDOM() picks different products",
     ("D1", "php/eloquent"): "ORDER BY RANDOM() picks different products",

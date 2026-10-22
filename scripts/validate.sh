@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Equivalence check and database-side query counting (docs/PLAN_REPO.md 2.5).
-#
 # Runs every scenario of every implementation through its validate entry point
 # (fixed parameters, warm-up, N calls) against PostgreSQL with pg_stat_statements,
 # then compares results and writes results/validation.json.

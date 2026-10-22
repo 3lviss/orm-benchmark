@@ -1,8 +1,6 @@
 <?php
 
 /**
- * Validation entry point (docs/PLAN_REPO.md 2.5) — not used for timing.
- *
  * Usage: php src/validate.php <implementation> [scenario ...]
  *
  * rand() and array_rand() are shadowed in the scenario namespaces (PHP resolves

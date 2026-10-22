@@ -9,7 +9,6 @@ import java.util.*;
 import java.util.logging.LogManager;
 
 /**
- * Validation entry point (docs/PLAN_REPO.md 2.5) — not used for timing.
  * Usage: java -cp app.jar com.benchmark.Validate <implementation> [scenario ...]
  *
  * Math.random() cannot be seeded, so the Random instance behind it

@@ -168,7 +168,6 @@ public class Runner {
 
         // ── Export raw measurements (optional) ──────────────────────────────
         // Enabled by setting RAW_OUTPUT_DIR environment variable.
-        // Used by analysis/analyse.py for exact Mann-Whitney U tests.
         // Output: {RAW_OUTPUT_DIR}/{scenario}.json
         String rawOutputDir = System.getenv("RAW_OUTPUT_DIR");
         if (rawOutputDir != null && !rawOutputDir.isEmpty()) {

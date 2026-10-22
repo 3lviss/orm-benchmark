@@ -1,4 +1,3 @@
-# Override used only by scripts/validate.sh (docs/PLAN_REPO.md 2.5).
 # Enables pg_stat_statements so query counts can be read on the database side.
 # Benchmark runs (phase 4) use docker-compose.yml alone, without this override.
 services:
