@@ -109,9 +109,10 @@ while (count($measurements) < $maxMeasure) {
     $n = count($measurements);
 
     if ($n >= $minMeasure && $n % $checkEvery === 0) {
-        sort($measurements);
+        $sorted = $measurements;  // sort a copy: raw export keeps measurement order
+        sort($sorted);
         $p99index = (int) ceil(0.99 * $n) - 1;
-        $p99value = $measurements[$p99index];
+        $p99value = $sorted[$p99index];
 
         if ($p99value > 0) {
             $bootstrapP99s = [];
@@ -137,11 +138,12 @@ while (count($measurements) < $maxMeasure) {
 }
 
 // ── Compute final statistics ──────────────────────────────────────────────────
-sort($measurements);
+$sorted = $measurements;  // sort a copy: raw export keeps measurement order
+sort($sorted);
 $n      = count($measurements);
-$p50    = $measurements[(int) ceil(0.50 * $n) - 1];
-$p95    = $measurements[(int) ceil(0.95 * $n) - 1];
-$p99    = $measurements[(int) ceil(0.99 * $n) - 1];
+$p50    = $sorted[(int) ceil(0.50 * $n) - 1];
+$p95    = $sorted[(int) ceil(0.95 * $n) - 1];
+$p99    = $sorted[(int) ceil(0.99 * $n) - 1];
 $mean   = array_sum($measurements) / $n;
 $variance = array_sum(array_map(fn($v) => ($v - $mean) ** 2, $measurements)) / $n;
 $stddev = sqrt($variance);

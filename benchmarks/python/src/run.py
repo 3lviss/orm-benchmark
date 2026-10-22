@@ -141,11 +141,11 @@ def main():
                 break
 
     # ── Compute final statistics ──────────────────────────────────────────────
-    measurements.sort()
+    sorted_m = sorted(measurements)  # sort a copy: raw export keeps measurement order
     n      = len(measurements)
-    p50    = measurements[math.ceil(0.50 * n) - 1]
-    p95    = measurements[math.ceil(0.95 * n) - 1]
-    p99    = measurements[math.ceil(0.99 * n) - 1]
+    p50    = sorted_m[math.ceil(0.50 * n) - 1]
+    p95    = sorted_m[math.ceil(0.95 * n) - 1]
+    p99    = sorted_m[math.ceil(0.99 * n) - 1]
     mean   = sum(measurements) / n
     stddev = math.sqrt(sum((x - mean) ** 2 for x in measurements) / n)
 

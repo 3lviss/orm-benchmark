@@ -137,11 +137,12 @@ public class Runner {
         }
 
         // ── Compute final statistics ──────────────────────────────────────────
-        Collections.sort(measurements);
+        List<Double> sortedAll = new ArrayList<>(measurements);  // raw export keeps measurement order
+        Collections.sort(sortedAll);
         int    n      = measurements.size();
-        double p50    = measurements.get((int) Math.ceil(0.50 * n) - 1);
-        double p95    = measurements.get((int) Math.ceil(0.95 * n) - 1);
-        double p99    = measurements.get((int) Math.ceil(0.99 * n) - 1);
+        double p50    = sortedAll.get((int) Math.ceil(0.50 * n) - 1);
+        double p95    = sortedAll.get((int) Math.ceil(0.95 * n) - 1);
+        double p99    = sortedAll.get((int) Math.ceil(0.99 * n) - 1);
         double mean   = measurements.stream().mapToDouble(Double::doubleValue).average().orElse(0);
         double variance = measurements.stream()
                             .mapToDouble(v -> Math.pow(v - mean, 2))
