@@ -18,8 +18,10 @@ class Product
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
 
+    // decimal is hydrated as string; a float property would make the UnitOfWork
+    // see every loaded product as changed on flush() (spurious UPDATE in D1)
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    private float $price;
+    private string $price;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
@@ -54,7 +56,7 @@ class Product
 
     public function getId(): int { return $this->id; }
     public function getName(): string { return $this->name; }
-    public function getPrice(): float { return $this->price; }
+    public function getPrice(): float { return (float)$this->price; }
     public function getDescription(): ?string { return $this->description; }
     public function getCreatedAt(): \DateTime { return $this->createdAt; }
     public function getCategory(): Category { return $this->category; }
@@ -62,7 +64,7 @@ class Product
     public function getOrderItems(): Collection { return $this->orderItems; }
     public function getReviews(): Collection { return $this->reviews; }
     public function setName(string $name): void { $this->name = $name; }
-    public function setPrice(float $price): void { $this->price = $price; }
+    public function setPrice(float $price): void { $this->price = number_format($price, 2, '.', ''); }
     public function setDescription(?string $desc): void { $this->description = $desc; }
     public function setCategory(Category $cat): void { $this->category = $cat; }
     public function setCreatedAt(\DateTime $dt): void { $this->createdAt = $dt; }

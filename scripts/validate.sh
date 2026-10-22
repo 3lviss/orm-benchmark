@@ -5,8 +5,8 @@
 # (fixed parameters, warm-up, N calls) against PostgreSQL with pg_stat_statements,
 # then compares results and writes results/validation.json.
 #
-# Usage: scripts/validate.sh            # all 10 implementations
-#        scripts/validate.sh php/doctrine typescript/prisma
+# Usage: scripts/validate.sh            # all 10 implementations -> results/validation.json
+#        scripts/validate.sh php/doctrine typescript/prisma   # subset -> results/validation.partial.json
 #
 # Env: VALIDATE_U (0.1), VALIDATE_N (10), VALIDATE_WARMUP (20), VALIDATE_WARMUP_WRITE (5)
 set -euo pipefail
@@ -21,6 +21,8 @@ ALL=(typescript/raw_sql typescript/prisma typescript/drizzle
      python/raw_sql python/sqlalchemy
      java/raw_sql java/hibernate)
 TARGETS=("${@:-${ALL[@]}}")
+# A subset compares content only within itself — never overwrite the full result
+[ $# -gt 0 ] && OUT=results/validation.partial.json
 
 VALIDATE_ENV=(-e VALIDATE_U -e VALIDATE_N -e VALIDATE_WARMUP -e VALIDATE_WARMUP_WRITE)
 psql() { docker compose exec -T postgres sh -c "psql -v ON_ERROR_STOP=1 -qtA -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -c \"$1\""; }
