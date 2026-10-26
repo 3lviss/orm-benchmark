@@ -1,5 +1,5 @@
 # Enables pg_stat_statements so query counts can be read on the database side.
-# Benchmark runs (phase 4) use docker-compose.yml alone, without this override.
+# Benchmark runs (runner/run_all.sh) use docker-compose.yml alone, without this override.
 services:
   postgres:
     command:

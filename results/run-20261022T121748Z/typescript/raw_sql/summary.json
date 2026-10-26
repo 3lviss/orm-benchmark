@@ -1,0 +1,140 @@
+{
+    "meta": {
+        "implementation": "raw_sql",
+        "language": "typescript",
+        "run_started": "2026-10-22T12:17:48Z",
+        "environment": "../../environment.json"
+    },
+    "results": {
+        "A1": {
+            "n_warmup": 43,
+            "warmup_converged": true,
+            "n_measurements": 10000,
+            "converged": false,
+            "p50_ms": 0.0707,
+            "p95_ms": 0.1012,
+            "p99_ms": 0.1886,
+            "mean_ms": 0.0764,
+            "stddev_ms": 0.0258,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "A2": {
+            "n_warmup": 96,
+            "warmup_converged": true,
+            "n_measurements": 10000,
+            "converged": false,
+            "p50_ms": 0.2898,
+            "p95_ms": 0.3666,
+            "p99_ms": 0.5004,
+            "mean_ms": 0.2953,
+            "stddev_ms": 0.052,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "A3": {
+            "n_warmup": 42,
+            "warmup_converged": true,
+            "n_measurements": 2300,
+            "converged": true,
+            "p50_ms": 6.049,
+            "p95_ms": 6.888,
+            "p99_ms": 8.0078,
+            "mean_ms": 6.16,
+            "stddev_ms": 0.7205,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "A4": {
+            "n_warmup": 23,
+            "warmup_converged": true,
+            "n_measurements": 10000,
+            "converged": false,
+            "p50_ms": 0.2864,
+            "p95_ms": 0.3353,
+            "p99_ms": 0.4743,
+            "mean_ms": 0.2931,
+            "stddev_ms": 0.0512,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "B1": {
+            "n_warmup": 608,
+            "warmup_converged": true,
+            "n_measurements": 10000,
+            "converged": false,
+            "p50_ms": 0.1146,
+            "p95_ms": 0.1638,
+            "p99_ms": 0.3177,
+            "mean_ms": 0.1247,
+            "stddev_ms": 0.0661,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "B2": {
+            "n_warmup": 18,
+            "warmup_converged": true,
+            "n_measurements": 7700,
+            "converged": true,
+            "p50_ms": 7.4953,
+            "p95_ms": 8.6277,
+            "p99_ms": 12.3688,
+            "mean_ms": 7.6851,
+            "stddev_ms": 0.8458,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "B3": {
+            "n_warmup": 67,
+            "warmup_converged": true,
+            "n_measurements": 10000,
+            "converged": false,
+            "p50_ms": 0.2811,
+            "p95_ms": 0.3303,
+            "p99_ms": 0.437,
+            "mean_ms": 0.287,
+            "stddev_ms": 0.0625,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "C1": {
+            "n_warmup": 11,
+            "warmup_converged": true,
+            "n_measurements": 200,
+            "converged": false,
+            "p50_ms": 396.1288,
+            "p95_ms": 427.5216,
+            "p99_ms": 443.8703,
+            "mean_ms": 400.2951,
+            "stddev_ms": 13.6079,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "C2": {
+            "n_warmup": 11,
+            "warmup_converged": true,
+            "n_measurements": 200,
+            "converged": false,
+            "p50_ms": 30.4485,
+            "p95_ms": 32.8646,
+            "p99_ms": 37.3757,
+            "mean_ms": 30.659,
+            "stddev_ms": 1.6627,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        },
+        "D1": {
+            "n_warmup": 20,
+            "warmup_converged": false,
+            "n_measurements": 200,
+            "converged": false,
+            "p50_ms": 2.3468,
+            "p95_ms": 4.077,
+            "p99_ms": 4.6899,
+            "mean_ms": 2.5266,
+            "stddev_ms": 0.9887,
+            "query_count_mean": -1,
+            "query_count_median": -1
+        }
+    }
+}

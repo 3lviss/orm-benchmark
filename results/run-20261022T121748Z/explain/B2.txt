@@ -1,0 +1,31 @@
+-- Scenario: B2
+-- Source: benchmarks/typescript/src/scenarios/raw_sql/Scenario.ts (same logical SQL in all raw implementations)
+-- Parameters: validation values (u = 0.1)
+-- Note: single EXPLAIN (ANALYZE, BUFFERS) run after one warm-up execution; timings are indicative only.
+-- PostgreSQL 16.14 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+-- Generated: 2026-10-22 13:12:57 UTC
+
+-- B2: product count and average price per category
+SELECT c.id, c.name, COUNT(p.id) AS product_count, ROUND(AVG(p.price)::numeric, 2) AS avg_price FROM categories c LEFT JOIN products p ON p.category_id = c.id GROUP BY c.id, c.name ORDER BY product_count DESC
+Sort  (cost=4410.88..4411.13 rows=100 width=52) (actual time=14.404..14.407 rows=100 loops=1)
+  Sort Key: (count(p.id)) DESC
+  Sort Method: quicksort  Memory: 30kB
+  Buffers: shared hit=3392
+  ->  HashAggregate  (cost=4406.06..4407.56 rows=100 width=52) (actual time=14.370..14.388 rows=100 loops=1)
+        Group Key: c.id
+        Batches: 1  Memory Usage: 80kB
+        Buffers: shared hit=3392
+        ->  Hash Right Join  (cost=3.25..4031.06 rows=50000 width=22) (actual time=0.020..9.696 rows=50000 loops=1)
+              Hash Cond: (p.category_id = c.id)
+              Buffers: shared hit=3392
+              ->  Seq Scan on products p  (cost=0.00..3891.00 rows=50000 width=14) (actual time=0.001..2.212 rows=50000 loops=1)
+                    Buffers: shared hit=3391
+              ->  Hash  (cost=2.00..2.00 rows=100 width=12) (actual time=0.015..0.015 rows=100 loops=1)
+                    Buckets: 1024  Batches: 1  Memory Usage: 13kB
+                    Buffers: shared hit=1
+                    ->  Seq Scan on categories c  (cost=0.00..2.00 rows=100 width=12) (actual time=0.002..0.006 rows=100 loops=1)
+                          Buffers: shared hit=1
+Planning:
+  Buffers: shared hit=6
+Planning Time: 0.115 ms
+Execution Time: 14.444 ms

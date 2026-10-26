@@ -1,0 +1,63 @@
+-- Scenario: D1
+-- Source: benchmarks/typescript/src/scenarios/raw_sql/Scenario.ts (same logical SQL in all raw implementations)
+-- Parameters: validation values (u = 0.1)
+-- Note: single EXPLAIN (ANALYZE, BUFFERS) run after one warm-up execution; timings are indicative only.
+-- PostgreSQL 16.14 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+-- Generated: 2026-10-22 13:12:58 UTC
+
+-- D1: pick 5 products (skip = 4999)
+SELECT id, price FROM products ORDER BY id ASC LIMIT 5 OFFSET 4999
+Limit  (cost=481.59..482.07 rows=5 width=10) (actual time=0.982..0.982 rows=5 loops=1)
+  Buffers: shared hit=412
+  ->  Index Scan using products_pkey on products  (cost=0.29..4861.15 rows=50487 width=10) (actual time=0.015..0.877 rows=5004 loops=1)
+        Buffers: shared hit=412
+Planning:
+  Buffers: shared hit=76
+Planning Time: 0.219 ms
+Execution Time: 1.003 ms
+
+-- D1: insert order
+INSERT INTO orders (user_id, total, status, created_at) VALUES (1001, 100.00, 'pending', NOW()) RETURNING id
+Insert on orders  (cost=0.00..0.02 rows=1 width=150) (actual time=0.257..0.258 rows=1 loops=1)
+  Buffers: shared hit=83 read=3 dirtied=4
+  ->  Result  (cost=0.00..0.02 rows=1 width=150) (actual time=0.065..0.065 rows=1 loops=1)
+        Buffers: shared hit=12 read=1 dirtied=1
+Planning:
+  Buffers: shared hit=6
+Planning Time: 0.019 ms
+Trigger for constraint orders_user_id_fkey: time=0.301 calls=1
+Execution Time: 0.568 ms
+
+-- D1: insert order item (x5 per iteration; shown once)
+INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (:order_id, :product_id, 1, :product_price)
+Insert on order_items  (cost=0.00..0.01 rows=0 width=0) (actual time=0.258..0.258 rows=0 loops=1)
+  Buffers: shared hit=54 read=11 dirtied=6
+  ->  Result  (cost=0.00..0.01 rows=1 width=32) (actual time=0.047..0.047 rows=1 loops=1)
+        Buffers: shared hit=11 read=1 dirtied=1
+Planning Time: 0.007 ms
+Trigger for constraint order_items_order_id_fkey: time=0.085 calls=1
+Trigger for constraint order_items_product_id_fkey: time=0.054 calls=1
+Execution Time: 0.402 ms
+
+-- D1 cleanup: delete order items
+DELETE FROM order_items WHERE order_id = :order_id
+Delete on order_items  (cost=0.42..8.50 rows=0 width=0) (actual time=0.010..0.010 rows=0 loops=1)
+  Buffers: shared hit=5
+  ->  Index Scan using idx_order_items_order on order_items  (cost=0.42..8.50 rows=4 width=6) (actual time=0.005..0.005 rows=1 loops=1)
+        Index Cond: (order_id = 200002)
+        Buffers: shared hit=4
+Planning:
+  Buffers: shared hit=5
+Planning Time: 0.032 ms
+Execution Time: 0.055 ms
+
+-- D1 cleanup: delete order
+DELETE FROM orders WHERE id = :order_id
+Delete on orders  (cost=0.42..8.44 rows=0 width=0) (actual time=0.006..0.006 rows=0 loops=1)
+  Buffers: shared hit=6
+  ->  Index Scan using orders_pkey on orders  (cost=0.42..8.44 rows=1 width=6) (actual time=0.004..0.004 rows=1 loops=1)
+        Index Cond: (id = 200002)
+        Buffers: shared hit=4
+Planning Time: 0.021 ms
+Trigger for constraint order_items_order_id_fkey: time=0.032 calls=1
+Execution Time: 0.051 ms

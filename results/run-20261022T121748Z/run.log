@@ -1,0 +1,1035 @@
+[2026-10-22T12:17:48Z] Freeze check against 112ea1c
+[2026-10-22T12:17:48Z] Building images
+ Image orm-benchmark-php Building 
+ Image orm-benchmark-typescript Building 
+ Image orm-benchmark-python Building 
+ Image orm-benchmark-java Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.26kB done
+#1 DONE 0.0s
+
+#2 [python internal] load build definition from Dockerfile
+#2 transferring dockerfile: 244B done
+#2 DONE 0.0s
+
+#3 [php internal] load build definition from Dockerfile
+#3 transferring dockerfile: 860B done
+#3 DONE 0.0s
+
+#4 [typescript internal] load build definition from Dockerfile
+#4 transferring dockerfile: 541B done
+#4 DONE 0.0s
+
+#5 [java internal] load build definition from Dockerfile
+#5 transferring dockerfile: 819B done
+#5 DONE 0.0s
+
+#6 [php internal] load metadata for docker.io/library/composer:2.10.1
+#6 DONE 0.0s
+
+#7 [java internal] load metadata for docker.io/library/maven:3.9.13-eclipse-temurin-21-alpine
+#7 DONE 0.0s
+
+#8 [typescript internal] load metadata for docker.io/library/node:20.20.2-alpine3.23
+#8 DONE 0.0s
+
+#9 [python internal] load metadata for docker.io/library/python:3.12.13-slim-trixie
+#9 DONE 0.0s
+
+#10 [typescript internal] load .dockerignore
+#10 transferring context: 2B done
+#10 DONE 0.0s
+
+#11 [python internal] load .dockerignore
+#11 transferring context: 2B done
+#11 DONE 0.0s
+
+#12 [python internal] load build context
+#12 transferring context: 483B done
+#12 DONE 0.0s
+
+#13 [typescript  1/10] FROM docker.io/library/node:20.20.2-alpine3.23@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293
+#13 resolve docker.io/library/node:20.20.2-alpine3.23@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 done
+#13 DONE 0.0s
+
+#14 [python 1/5] FROM docker.io/library/python:3.12.13-slim-trixie@sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36
+#14 resolve docker.io/library/python:3.12.13-slim-trixie@sha256:229a2c5bfa27522db7815ea81f9bed70af17ccb9de9fc7ad142b1877b5830d36 done
+#14 DONE 0.0s
+
+#15 [python 3/5] COPY requirements.txt .
+#15 CACHED
+
+#16 [python 2/5] WORKDIR /app
+#16 CACHED
+
+#17 [python 4/5] RUN pip install --no-cache-dir -r requirements.txt
+#17 CACHED
+
+#18 [python 5/5] COPY src/ src/
+#18 CACHED
+
+#19 [typescript internal] load build context
+#19 transferring context: 687B done
+#19 DONE 0.0s
+
+#20 [typescript  2/10] WORKDIR /app
+#20 CACHED
+
+#21 [typescript  9/10] COPY src/ src/
+#21 CACHED
+
+#22 [typescript  5/10] RUN npm ci
+#22 CACHED
+
+#23 [typescript  3/10] RUN apk add --no-cache openssl openssl-dev libc6-compat
+#23 CACHED
+
+#24 [typescript  7/10] RUN npx prisma generate
+#24 CACHED
+
+#25 [typescript  6/10] COPY src/scenarios/prisma/schema.prisma src/scenarios/prisma/schema.prisma
+#25 CACHED
+
+#26 [typescript  8/10] COPY tsconfig.json ./
+#26 CACHED
+
+#27 [typescript  4/10] COPY package.json package-lock.json ./
+#27 CACHED
+
+#28 [typescript 10/10] RUN npm run build
+#28 CACHED
+
+#29 [python] exporting to image
+#29 exporting layers done
+#29 exporting manifest sha256:ccedf96e9df2a71b9aa43e6a506ec2d46adb4825f52b0d2b88cd091a570b4ed4 done
+#29 exporting config sha256:e9fbd4033330540c6509d0fc5cbf9de8c68daee7470855added8b8d1f456780f done
+#29 exporting attestation manifest sha256:7b26fd5b141bb0b9e52bd8a3c24367292c189d0060100b4ac38f38448014f685 done
+#29 exporting manifest list sha256:1b0a83b580e5db47bab126f25206c9bf9c3d1d0b9bf46046d6c70b366dee8932 done
+#29 naming to docker.io/library/orm-benchmark-python:latest
+#29 naming to docker.io/library/orm-benchmark-python:latest done
+#29 unpacking to docker.io/library/orm-benchmark-python:latest done
+#29 DONE 0.0s
+
+#30 [typescript] exporting to image
+#30 exporting layers done
+#30 exporting manifest sha256:0a53f460dec19ff3e5ba49f0ba6cc6d5996a9a1c7260471e50877c8e5e845f34 done
+#30 exporting config sha256:f4ed9b5b2197e93c48af5f390d1a3b6682dea489b0d5ce43d27a48f652576a95 done
+#30 exporting attestation manifest sha256:468134392affdb80f4fb48da993d431105debe7fc87db807fc8ee40faa191584 done
+#30 exporting manifest list sha256:958c96bffa712af7d856311c9f0343d837c9b678823214b5cc3ff8f85f9049b7 done
+#30 naming to docker.io/library/orm-benchmark-typescript:latest done
+#30 unpacking to docker.io/library/orm-benchmark-typescript:latest done
+#30 DONE 0.1s
+
+#31 [python] resolving provenance for metadata file
+#31 DONE 0.0s
+
+#32 [typescript] resolving provenance for metadata file
+#32 DONE 0.0s
+
+#33 [java internal] load metadata for docker.io/library/eclipse-temurin:21.0.11_10-jre-alpine
+#33 DONE 0.7s
+
+#34 [php internal] load metadata for docker.io/library/php:8.3.31-cli-trixie
+#34 DONE 0.8s
+
+#35 [java internal] load .dockerignore
+#35 transferring context: 2B done
+#35 DONE 0.0s
+
+#36 [java stage-1 1/4] FROM docker.io/library/eclipse-temurin:21.0.11_10-jre-alpine@sha256:3f08b13888f595cc49edabea7250ba69499ba25602b267da591720769400e08c
+#36 resolve docker.io/library/eclipse-temurin:21.0.11_10-jre-alpine@sha256:3f08b13888f595cc49edabea7250ba69499ba25602b267da591720769400e08c done
+#36 DONE 0.0s
+
+#37 [java builder 1/7] FROM docker.io/library/maven:3.9.13-eclipse-temurin-21-alpine@sha256:194053d8f204a39710e564b49ba4d22188159fd29f073b8da1715aac61503132
+#37 resolve docker.io/library/maven:3.9.13-eclipse-temurin-21-alpine@sha256:194053d8f204a39710e564b49ba4d22188159fd29f073b8da1715aac61503132 done
+#37 DONE 0.0s
+
+#38 [java internal] load build context
+#38 transferring context: 1.76kB done
+#38 DONE 0.0s
+
+#39 [java builder 6/7] COPY src/ src/
+#39 CACHED
+
+#40 [java builder 2/7] WORKDIR /build
+#40 CACHED
+
+#41 [java stage-1 2/4] WORKDIR /app
+#41 CACHED
+
+#42 [java builder 4/7] RUN mvn dependency:go-offline -q
+#42 CACHED
+
+#43 [java builder 7/7] RUN mvn package -DskipTests -q
+#43 CACHED
+
+#44 [java builder 5/7] RUN mvn dependency:list -q -DincludeScope=runtime -DoutputFile=dependencies.txt
+#44 CACHED
+
+#45 [java stage-1 3/4] COPY --from=builder /build/target/orm-benchmark-java-1.0.0-jar-with-dependencies.jar app.jar
+#45 CACHED
+
+#46 [java builder 3/7] COPY pom.xml .
+#46 CACHED
+
+#47 [java stage-1 4/4] COPY --from=builder /build/dependencies.txt dependencies.txt
+#47 CACHED
+
+#48 [java] exporting to image
+#48 exporting layers done
+#48 exporting manifest sha256:efdd4d308d85724ba4b522c6cde97b581a404fa9de3a926b64c1751ab411314d done
+#48 exporting config sha256:f2acb59fd14f61fafe047b4ffc0bb2b47aefaf25535857aa53a247fed98d9e34 done
+#48 exporting attestation manifest sha256:0b6fca73de01b13278098f680a3bdc67d124954452cd956ea1555392ae6ca090 done
+#48 exporting manifest list sha256:6eff95ec80327477895e03048b0a9e38ae4a484def45e06671ddaec78602be66 done
+#48 naming to docker.io/library/orm-benchmark-java:latest done
+#48 unpacking to docker.io/library/orm-benchmark-java:latest done
+#48 DONE 0.0s
+
+#49 [php internal] load .dockerignore
+#49 transferring context: 2B done
+#49 DONE 0.0s
+
+#50 [php] FROM docker.io/library/composer:2.10.1@sha256:7725eb4545c438629ae8bde3ef0bb9a5038ef566126ad878442a69007242d267
+#50 resolve docker.io/library/composer:2.10.1@sha256:7725eb4545c438629ae8bde3ef0bb9a5038ef566126ad878442a69007242d267 done
+#50 DONE 0.0s
+
+#51 [php stage-0  1/10] FROM docker.io/library/php:8.3.31-cli-trixie@sha256:c163439c34e39cc29152c54e957b143ec916913143758e7c8353b80e638ec6e5
+#51 resolve docker.io/library/php:8.3.31-cli-trixie@sha256:c163439c34e39cc29152c54e957b143ec916913143758e7c8353b80e638ec6e5 0.0s done
+#51 DONE 0.0s
+
+#52 [php internal] load build context
+#52 transferring context: 1.78kB done
+#52 DONE 0.0s
+
+#53 [php stage-0  6/10] RUN composer install --no-dev --optimize-autoloader --no-interaction
+#53 CACHED
+
+#54 [php stage-0  8/10] COPY docker-entrypoint.sh /docker-entrypoint.sh
+#54 CACHED
+
+#55 [php stage-0  4/10] WORKDIR /app
+#55 CACHED
+
+#56 [php stage-0  9/10] RUN chmod +x /docker-entrypoint.sh
+#56 CACHED
+
+#57 [php stage-0  3/10] COPY --from=composer:2.10.1 /usr/bin/composer /usr/bin/composer
+#57 CACHED
+
+#58 [php stage-0  5/10] COPY composer.json composer.lock ./
+#58 CACHED
+
+#59 [php stage-0  7/10] COPY src/ src/
+#59 CACHED
+
+#60 [php stage-0  2/10] RUN apt-get update && apt-get install -y --no-install-recommends         libpq-dev         unzip     && docker-php-ext-install pdo pdo_pgsql     && apt-get clean     && rm -rf /var/lib/apt/lists/*
+#60 CACHED
+
+#61 [php stage-0 10/10] RUN mkdir -p /var/tmp/doctrine-proxies
+#61 CACHED
+
+#62 [java] resolving provenance for metadata file
+#62 DONE 0.0s
+
+#63 [php] exporting to image
+#63 exporting layers done
+#63 exporting manifest sha256:fed335565fa9aa3582f320243f254ba9d1cb4fdfb70e3390d82a19b7b8dc8730 done
+#63 exporting config sha256:4efdf8a0e228d6fa9b85ef66310857acddbf5669b75a9b9be7b81db986a50d93 done
+#63 exporting attestation manifest sha256:d0a4b5d7f1522d2e0d2f2fd607f83aa089774c493d6a7520a6b5307a5fd8bf06 done
+#63 exporting manifest list sha256:4f6aa88a68381caccbb2aa621373696e5344b25d86a22fda5b9d7b2eb89648b9 done
+#63 naming to docker.io/library/orm-benchmark-php:latest done
+#63 unpacking to docker.io/library/orm-benchmark-php:latest done
+#63 DONE 0.0s
+
+#64 [php] resolving provenance for metadata file
+#64 DONE 0.0s
+ Image orm-benchmark-typescript Built 
+ Image orm-benchmark-java Built 
+ Image orm-benchmark-php Built 
+ Image orm-benchmark-python Built 
+[2026-10-22T12:17:50Z] Starting PostgreSQL
+ Container benchmark-postgres Recreate 
+ Container benchmark-postgres Recreated 
+ Container benchmark-postgres Starting 
+ Container benchmark-postgres Started 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+[2026-10-22T12:17:56Z] Preparing template database
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+Creating empty database 'benchmark' with schema...
+Seeding (dataset/seed.py)...
+ Container orm-benchmark-seed-run-7830a85b56c1 Creating 
+ Container orm-benchmark-seed-run-7830a85b56c1 Created 
+
+[notice] A new release of pip is available: 25.0.1 -> 26.2.2
+[notice] To update, run: pip install --upgrade pip
+Checking row counts...
+VACUUM (FREEZE, ANALYZE), autovacuum off...
+Turning 'benchmark' into 'benchmark_template'...
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+NOTICE:  database "benchmark" does not exist, skipping
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+[2026-10-22T12:18:35Z] Initial C2 plan (fresh copy)
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+Wrote 1 EXPLAIN files to /Users/e.ahmetovic/Desktop/orm-benchmark/results/run-20261022T121748Z/explain-initial
+-- Scenario: C2
+-- Source: benchmarks/typescript/src/scenarios/raw_sql/Scenario.ts (same logical SQL in all raw implementations)
+-- Parameters: validation values (u = 0.1)
+-- Note: single EXPLAIN (ANALYZE, BUFFERS) run after one warm-up execution; timings are indicative only.
+-- PostgreSQL 16.14 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+-- Generated: 2026-10-22 12:18:36 UTC
+
+-- C2: shipped -> delivered (1000 rows)
+UPDATE orders SET status = 'delivered' FROM (SELECT id FROM orders WHERE status = 'shipped' AND created_at < NOW() - INTERVAL '30 days' ORDER BY id LIMIT 1000) AS batch WHERE orders.id = batch.id
+Update on orders  (cost=250.06..4601.06 rows=0 width=0) (actual time=37.721..37.724 rows=0 loops=1)
+  Buffers: shared hit=14471 read=2365 dirtied=847 written=30
+  ->  Hash Join  (cost=250.06..4601.06 rows=1000 width=152) (actual time=0.925..23.751 rows=1000 loops=1)
+        Hash Cond: (orders.id = batch.id)
+        Buffers: shared hit=59 read=1592
+        ->  Seq Scan on orders  (cost=0.00..3591.00 rows=200000 width=10) (actual time=0.019..13.545 rows=200000 loops=1)
+              Buffers: shared hit=55 read=1536
+        ->  Hash  (cost=237.56..237.56 rows=1000 width=32) (actual time=0.889..0.890 rows=1000 loops=1)
+              Buckets: 1024  Batches: 1  Memory Usage: 71kB
+              Buffers: shared hit=4 read=56
+              ->  Subquery Scan on batch  (cost=0.42..237.56 rows=1000 width=32) (actual time=0.014..0.803 rows=1000 loops=1)
+                    Buffers: shared hit=4 read=56
+                    ->  Limit  (cost=0.42..227.56 rows=1000 width=4) (actual time=0.010..0.722 rows=1000 loops=1)
+                          Buffers: shared hit=4 read=56
+                          ->  Index Scan using orders_pkey on orders orders_1  (cost=0.42..8798.42 rows=38734 width=4) (actual time=0.009..0.680 rows=1000 loops=1)
+                                Filter: (((status)::text = 'shipped'::text) AND (created_at < (now() - '30 days'::interval)))
+                                Rows Removed by Filter: 4319
+                                Buffers: shared hit=4 read=56
+Planning:
+  Buffers: shared hit=179 read=40 dirtied=1
+Planning Time: 1.002 ms
+Execution Time: 37.839 ms
+
+-- C2 restore: delivered -> shipped (1000 rows)
+UPDATE orders SET status = 'shipped' FROM (SELECT id FROM orders WHERE status = 'delivered' AND created_at < NOW() - INTERVAL '30 days' ORDER BY id LIMIT 1000) AS batch WHERE orders.id = batch.id
+Update on orders  (cost=253.51..4629.07 rows=0 width=0) (actual time=21.067..21.068 rows=0 loops=1)
+  Buffers: shared hit=18022 read=62 dirtied=73 written=11
+  ->  Hash Join  (cost=253.51..4629.07 rows=1000 width=152) (actual time=0.535..14.916 rows=1000 loops=1)
+        Hash Cond: (orders.id = batch.id)
+        Buffers: shared hit=2575
+        ->  Seq Scan on orders  (cost=0.00..3611.31 rows=201131 width=10) (actual time=0.003..7.297 rows=200000 loops=1)
+              Buffers: shared hit=1600
+        ->  Hash  (cost=241.01..241.01 rows=1000 width=32) (actual time=0.524..0.525 rows=1000 loops=1)
+              Buckets: 1024  Batches: 1  Memory Usage: 71kB
+              Buffers: shared hit=975
+              ->  Subquery Scan on batch  (cost=0.42..241.01 rows=1000 width=32) (actual time=0.015..0.460 rows=1000 loops=1)
+                    Buffers: shared hit=975
+                    ->  Limit  (cost=0.42..231.01 rows=1000 width=4) (actual time=0.013..0.388 rows=1000 loops=1)
+                          Buffers: shared hit=975
+                          ->  Index Scan using orders_pkey on orders orders_1  (cost=0.42..8891.70 rows=38558 width=4) (actual time=0.012..0.350 rows=1000 loops=1)
+                                Filter: (((status)::text = 'delivered'::text) AND (created_at < (now() - '30 days'::interval)))
+                                Rows Removed by Filter: 1583
+                                Buffers: shared hit=975
+Planning:
+  Buffers: shared hit=10
+Planning Time: 0.133 ms
+Trigger for constraint orders_user_id_fkey: time=3.931 calls=471
+Execution Time: 25.047 ms
+
+-- C2 (generic plan: PREPARE + EXECUTE, plan_cache_mode = force_generic_plan)
+Update on orders  (cost=604.72..4999.38 rows=0 width=0) (actual time=20.996..20.998 rows=0 loops=1)
+  Buffers: shared hit=20981 dirtied=10 written=10
+  ->  Hash Join  (cost=604.72..4999.38 rows=1000 width=152) (actual time=1.017..14.726 rows=1000 loops=1)
+        Hash Cond: (orders.id = batch.id)
+        Buffers: shared hit=5219
+        ->  Seq Scan on orders  (cost=0.00..3627.11 rows=202011 width=10) (actual time=0.002..7.021 rows=200000 loops=1)
+              Buffers: shared hit=1607
+        ->  Hash  (cost=592.22..592.22 rows=1000 width=32) (actual time=1.007..1.009 rows=1000 loops=1)
+              Buckets: 1024  Batches: 1  Memory Usage: 71kB
+              Buffers: shared hit=3612
+              ->  Subquery Scan on batch  (cost=0.42..592.22 rows=1000 width=32) (actual time=0.007..0.938 rows=1000 loops=1)
+                    Buffers: shared hit=3612
+                    ->  Limit  (cost=0.42..582.22 rows=1000 width=4) (actual time=0.006..0.864 rows=1000 loops=1)
+                          Buffers: shared hit=3612
+                          ->  Index Scan using orders_pkey on orders orders_1  (cost=0.42..7910.64 rows=13596 width=4) (actual time=0.005..0.830 rows=1000 loops=1)
+                                Filter: ((created_at < $1) AND ((status)::text = 'shipped'::text))
+                                Rows Removed by Filter: 4319
+                                Buffers: shared hit=3612
+Planning:
+  Buffers: shared hit=10
+Planning Time: 0.094 ms
+Execution Time: 21.032 ms
+[2026-10-22T12:18:36Z] Validation (all implementations)
+Starting PostgreSQL with pg_stat_statements...
+ Container benchmark-postgres Recreate 
+ Container benchmark-postgres Recreated 
+ Container benchmark-postgres Starting 
+ Container benchmark-postgres Started 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+Validating typescript/raw_sql...
+Validating typescript/prisma...
+Validating typescript/drizzle...
+Validating php/raw_sql...
+Validating php/eloquent...
+Validating php/doctrine...
+Validating python/raw_sql...
+Validating python/sqlalchemy...
+Validating java/raw_sql...
+Validating java/hibernate...
+| Implementation | A1 | A2 | A3 | A4 | B1 | B2 | B3 | C1 | C2 | D1 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| java/raw_sql | 1 | 1 | 101 | 1 | 1 | 1 | 1 | 10001 | 2 | 9 |
+| java/hibernate | 1 | 1 | 100 | 1 | 1 | 1 | 1 | 10002 | 2 | 11 |
+| php/raw_sql | 1 | 1 | 101 | 1 | 1 | 1 | 1 | 21 | 2 | 9 ⚠ |
+| php/doctrine | 1 | 1 | 100 | 1 | 1 | 1 | 2 | 21 | 2 | 16 ⚠ |
+| php/eloquent | 1 | 1 | 101 | 2 | 4 | 1 | 3 | 21 | 2 | 10 ⚠ |
+| python/raw_sql | 1 | 1 | 101 | 1 | 1 | 1 | 1 | 10001 | 2 | 9 |
+| python/sqlalchemy | 1 | 1 | 100 | 1 | 1 | 1 | 2 | 21 | 2 | 7 |
+| typescript/raw_sql | 1 | 1 | 101 | 1 | 1 | 1 | 1 | 21 | 2 | 9 |
+| typescript/drizzle | 1 | 1 | 101 | 1 | 1 | 1 | 1 | 21 | 2 ⚠ | 5 |
+| typescript/prisma | 1 | 1 | 2 | 2 | 4 | 2 | 2 | 21 | 2 | 7 |
+
+- php/raw_sql D1: content warning: ORDER BY RANDOM() picks different products
+- php/doctrine D1: content warning: ORDER BY RANDOM() picks different products
+- php/eloquent D1: content warning: ORDER BY RANDOM() picks different products
+- typescript/drizzle C2: return value warning: returns rowCount (pg) instead of count (postgres.js) -> 0
+
+Wrote results/validation.json
+Restoring PostgreSQL without pg_stat_statements...
+ Container benchmark-postgres Recreate 
+ Container benchmark-postgres Recreated 
+ Container benchmark-postgres Starting 
+ Container benchmark-postgres Started 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+[2026-10-22T12:20:16Z] Measuring typescript: raw_sql prisma drizzle
+[2026-10-22T12:20:16Z] Run typescript/raw_sql A1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-b5c6fa0545d1 Creating 
+ Container orm-benchmark-typescript-run-b5c6fa0545d1 Created 
+[2026-10-22T12:21:05Z] Run typescript/prisma A1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-c5356419abcc Creating 
+ Container orm-benchmark-typescript-run-c5356419abcc Created 
+[2026-10-22T12:21:56Z] Run typescript/drizzle A1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-7279144c705f Creating 
+ Container orm-benchmark-typescript-run-7279144c705f Created 
+[2026-10-22T12:22:46Z] Run typescript/prisma A2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-8ebfa4522dbf Creating 
+ Container orm-benchmark-typescript-run-8ebfa4522dbf Created 
+[2026-10-22T12:22:48Z] Run typescript/drizzle A2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-ff0f48f33c3b Creating 
+ Container orm-benchmark-typescript-run-ff0f48f33c3b Created 
+[2026-10-22T12:23:40Z] Run typescript/raw_sql A2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-442575bba341 Creating 
+ Container orm-benchmark-typescript-run-442575bba341 Created 
+[2026-10-22T12:24:31Z] Run typescript/drizzle A3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-a7d6ceb212a4 Creating 
+ Container orm-benchmark-typescript-run-a7d6ceb212a4 Created 
+[2026-10-22T12:25:49Z] Run typescript/raw_sql A3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-432a4a3e3bc9 Creating 
+ Container orm-benchmark-typescript-run-432a4a3e3bc9 Created 
+[2026-10-22T12:26:07Z] Run typescript/prisma A3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-12897fa5eb4f Creating 
+ Container orm-benchmark-typescript-run-12897fa5eb4f Created 
+[2026-10-22T12:26:25Z] Run typescript/raw_sql A4
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-a3e584dded8e Creating 
+ Container orm-benchmark-typescript-run-a3e584dded8e Created 
+[2026-10-22T12:27:16Z] Run typescript/prisma A4
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-f039e0e4ed86 Creating 
+ Container orm-benchmark-typescript-run-f039e0e4ed86 Created 
+[2026-10-22T12:28:01Z] Run typescript/drizzle A4
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-23d70757efd7 Creating 
+ Container orm-benchmark-typescript-run-23d70757efd7 Created 
+[2026-10-22T12:28:55Z] Run typescript/prisma B1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-dd055a5c741a Creating 
+ Container orm-benchmark-typescript-run-dd055a5c741a Created 
+[2026-10-22T12:29:27Z] Run typescript/drizzle B1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-84c686f50b29 Creating 
+ Container orm-benchmark-typescript-run-84c686f50b29 Created 
+[2026-10-22T12:30:19Z] Run typescript/raw_sql B1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-11f7fb24b692 Creating 
+ Container orm-benchmark-typescript-run-11f7fb24b692 Created 
+[2026-10-22T12:31:09Z] Run typescript/drizzle B2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-fcedc70ba973 Creating 
+ Container orm-benchmark-typescript-run-fcedc70ba973 Created 
+[2026-10-22T12:32:15Z] Run typescript/raw_sql B2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-0fcde8c3016b Creating 
+ Container orm-benchmark-typescript-run-0fcde8c3016b Created 
+[2026-10-22T12:33:42Z] Run typescript/prisma B2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-a0fc0fded037 Creating 
+ Container orm-benchmark-typescript-run-a0fc0fded037 Created 
+[2026-10-22T12:34:40Z] Run typescript/raw_sql B3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-d8275fdf1a3a Creating 
+ Container orm-benchmark-typescript-run-d8275fdf1a3a Created 
+[2026-10-22T12:35:32Z] Run typescript/prisma B3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-a7f471eb0fb9 Creating 
+ Container orm-benchmark-typescript-run-a7f471eb0fb9 Created 
+[2026-10-22T12:35:39Z] Run typescript/drizzle B3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-4f5040dae333 Creating 
+ Container orm-benchmark-typescript-run-4f5040dae333 Created 
+[2026-10-22T12:36:33Z] Run typescript/prisma C1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-7205d2083988 Creating 
+ Container orm-benchmark-typescript-run-7205d2083988 Created 
+[2026-10-22T12:37:34Z] Run typescript/drizzle C1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-e5d7bbf77947 Creating 
+ Container orm-benchmark-typescript-run-e5d7bbf77947 Created 
+[2026-10-22T12:38:36Z] Run typescript/raw_sql C1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-638ca22a3633 Creating 
+ Container orm-benchmark-typescript-run-638ca22a3633 Created 
+[2026-10-22T12:40:02Z] Run typescript/drizzle C2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-355bb2e6e2a6 Creating 
+ Container orm-benchmark-typescript-run-355bb2e6e2a6 Created 
+[2026-10-22T12:40:08Z] Run typescript/raw_sql C2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-146418e35bd8 Creating 
+ Container orm-benchmark-typescript-run-146418e35bd8 Created 
+[2026-10-22T12:40:16Z] Run typescript/prisma C2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-01088f689ae5 Creating 
+ Container orm-benchmark-typescript-run-01088f689ae5 Created 
+[2026-10-22T12:40:24Z] Run typescript/raw_sql D1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-96c5b4d3b54b Creating 
+ Container orm-benchmark-typescript-run-96c5b4d3b54b Created 
+[2026-10-22T12:40:26Z] Run typescript/prisma D1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-087c6af66ece Creating 
+ Container orm-benchmark-typescript-run-087c6af66ece Created 
+[2026-10-22T12:40:28Z] Run typescript/drizzle D1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-typescript-run-4e314bbdc7ab Creating 
+ Container orm-benchmark-typescript-run-4e314bbdc7ab Created 
+[2026-10-22T12:40:30Z] Measuring php: raw_sql eloquent doctrine
+[2026-10-22T12:40:30Z] Run php/raw_sql A1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-cd094154a6c9 Creating 
+ Container orm-benchmark-php-run-cd094154a6c9 Created 
+[2026-10-22T12:40:59Z] Run php/eloquent A1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-222620f49f7c Creating 
+ Container orm-benchmark-php-run-222620f49f7c Created 
+[2026-10-22T12:41:01Z] Run php/doctrine A1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-abd304056c06 Creating 
+ Container orm-benchmark-php-run-abd304056c06 Created 
+[2026-10-22T12:41:05Z] Run php/eloquent A2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-0e8a131911e3 Creating 
+ Container orm-benchmark-php-run-0e8a131911e3 Created 
+[2026-10-22T12:41:37Z] Run php/doctrine A2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-e0028f997513 Creating 
+ Container orm-benchmark-php-run-e0028f997513 Created 
+[2026-10-22T12:41:45Z] Run php/raw_sql A2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-101cf6746053 Creating 
+ Container orm-benchmark-php-run-101cf6746053 Created 
+[2026-10-22T12:41:46Z] Run php/doctrine A3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-bb70ae1daed7 Creating 
+ Container orm-benchmark-php-run-bb70ae1daed7 Created 
+[2026-10-22T12:41:49Z] Run php/raw_sql A3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-eeb092db1deb Creating 
+ Container orm-benchmark-php-run-eeb092db1deb Created 
+[2026-10-22T12:43:53Z] Run php/eloquent A3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-f1b5aabb3b05 Creating 
+ Container orm-benchmark-php-run-f1b5aabb3b05 Created 
+[2026-10-22T12:45:07Z] Run php/raw_sql A4
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-0161d1c2dbac Creating 
+ Container orm-benchmark-php-run-0161d1c2dbac Created 
+[2026-10-22T12:45:10Z] Run php/eloquent A4
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-570f334c5ebc Creating 
+ Container orm-benchmark-php-run-570f334c5ebc Created 
+[2026-10-22T12:45:12Z] Run php/doctrine A4
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-9b5e192877d9 Creating 
+ Container orm-benchmark-php-run-9b5e192877d9 Created 
+[2026-10-22T12:45:16Z] Run php/eloquent B1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-157a4a9e3f23 Creating 
+ Container orm-benchmark-php-run-157a4a9e3f23 Created 
+[2026-10-22T12:45:51Z] Run php/doctrine B1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-96a69e58afa2 Creating 
+ Container orm-benchmark-php-run-96a69e58afa2 Created 
+[2026-10-22T12:45:52Z] Run php/raw_sql B1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-aa81fb4fd507 Creating 
+ Container orm-benchmark-php-run-aa81fb4fd507 Created 
+[2026-10-22T12:45:54Z] Run php/doctrine B2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-ba48591a72c0 Creating 
+ Container orm-benchmark-php-run-ba48591a72c0 Created 
+[2026-10-22T12:47:18Z] Run php/raw_sql B2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-35d662870c75 Creating 
+ Container orm-benchmark-php-run-35d662870c75 Created 
+[2026-10-22T12:48:46Z] Run php/eloquent B2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-0e1bba312b63 Creating 
+ Container orm-benchmark-php-run-0e1bba312b63 Created 
+[2026-10-22T12:50:23Z] Run php/raw_sql B3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-a2cd54d693e3 Creating 
+ Container orm-benchmark-php-run-a2cd54d693e3 Created 
+[2026-10-22T12:50:24Z] Run php/eloquent B3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-afdf4adde254 Creating 
+ Container orm-benchmark-php-run-afdf4adde254 Created 
+[2026-10-22T12:51:09Z] Run php/doctrine B3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-71679bfe8569 Creating 
+ Container orm-benchmark-php-run-71679bfe8569 Created 
+[2026-10-22T12:51:16Z] Run php/eloquent C1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-b145695aff6e Creating 
+ Container orm-benchmark-php-run-b145695aff6e Created 
+[2026-10-22T12:52:40Z] Run php/doctrine C1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-9fda007a3cdc Creating 
+ Container orm-benchmark-php-run-9fda007a3cdc Created 
+[2026-10-22T12:53:58Z] Run php/raw_sql C1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-bb6171c191db Creating 
+ Container orm-benchmark-php-run-bb6171c191db Created 
+[2026-10-22T12:54:41Z] Run php/doctrine C2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-d4d9a2f8f8e0 Creating 
+ Container orm-benchmark-php-run-d4d9a2f8f8e0 Created 
+[2026-10-22T12:54:45Z] Run php/raw_sql C2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-4488c85b068d Creating 
+ Container orm-benchmark-php-run-4488c85b068d Created 
+[2026-10-22T12:54:48Z] Run php/eloquent C2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-f1df24eb15fe Creating 
+ Container orm-benchmark-php-run-f1df24eb15fe Created 
+[2026-10-22T12:54:52Z] Run php/raw_sql D1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-293c3c63206c Creating 
+ Container orm-benchmark-php-run-293c3c63206c Created 
+[2026-10-22T12:54:55Z] Run php/eloquent D1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-b48d3eee303b Creating 
+ Container orm-benchmark-php-run-b48d3eee303b Created 
+[2026-10-22T12:54:57Z] Run php/doctrine D1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-php-run-08f97338ea45 Creating 
+ Container orm-benchmark-php-run-08f97338ea45 Created 
+[2026-10-22T12:54:59Z] Measuring python: raw_sql sqlalchemy
+[2026-10-22T12:54:59Z] Run python/raw_sql A1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-2a0d6bd37ef0 Creating 
+ Container orm-benchmark-python-run-2a0d6bd37ef0 Created 
+[2026-10-22T12:55:01Z] Run python/sqlalchemy A1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-b39def41abab Creating 
+ Container orm-benchmark-python-run-b39def41abab Created 
+[2026-10-22T12:55:05Z] Run python/sqlalchemy A2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-752197ef5978 Creating 
+ Container orm-benchmark-python-run-752197ef5978 Created 
+[2026-10-22T12:55:06Z] Run python/raw_sql A2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-e10b517b1de7 Creating 
+ Container orm-benchmark-python-run-e10b517b1de7 Created 
+[2026-10-22T12:55:08Z] Run python/raw_sql A3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-10191919c9bd Creating 
+ Container orm-benchmark-python-run-10191919c9bd Created 
+[2026-10-22T12:56:30Z] Run python/sqlalchemy A3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-604e6e55bbbd Creating 
+ Container orm-benchmark-python-run-604e6e55bbbd Created 
+[2026-10-22T12:57:01Z] Run python/sqlalchemy A4
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-eae04c4c0a53 Creating 
+ Container orm-benchmark-python-run-eae04c4c0a53 Created 
+[2026-10-22T12:57:39Z] Run python/raw_sql A4
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-141810fd1c02 Creating 
+ Container orm-benchmark-python-run-141810fd1c02 Created 
+[2026-10-22T12:57:40Z] Run python/raw_sql B1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-6f7739ce5562 Creating 
+ Container orm-benchmark-python-run-6f7739ce5562 Created 
+[2026-10-22T12:57:42Z] Run python/sqlalchemy B1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-191ec89e92fd Creating 
+ Container orm-benchmark-python-run-191ec89e92fd Created 
+[2026-10-22T12:57:44Z] Run python/sqlalchemy B2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-17c9950641da Creating 
+ Container orm-benchmark-python-run-17c9950641da Created 
+[2026-10-22T12:59:34Z] Run python/raw_sql B2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-4c44389a22f7 Creating 
+ Container orm-benchmark-python-run-4c44389a22f7 Created 
+[2026-10-22T13:00:48Z] Run python/raw_sql B3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-0401a6a6e2dc Creating 
+ Container orm-benchmark-python-run-0401a6a6e2dc Created 
+[2026-10-22T13:00:50Z] Run python/sqlalchemy B3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-3e777f2ea482 Creating 
+ Container orm-benchmark-python-run-3e777f2ea482 Created 
+[2026-10-22T13:01:28Z] Run python/sqlalchemy C1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-524303bee192 Creating 
+ Container orm-benchmark-python-run-524303bee192 Created 
+[2026-10-22T13:03:01Z] Run python/raw_sql C1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-77cf0327b5fb Creating 
+ Container orm-benchmark-python-run-77cf0327b5fb Created 
+[2026-10-22T13:04:27Z] Run python/raw_sql C2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-e0b49852032e Creating 
+ Container orm-benchmark-python-run-e0b49852032e Created 
+[2026-10-22T13:04:31Z] Run python/sqlalchemy C2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-6f8b452b3755 Creating 
+ Container orm-benchmark-python-run-6f8b452b3755 Created 
+[2026-10-22T13:04:36Z] Run python/sqlalchemy D1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-01bad4823d74 Creating 
+ Container orm-benchmark-python-run-01bad4823d74 Created 
+[2026-10-22T13:04:38Z] Run python/raw_sql D1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-python-run-cfabf7790585 Creating 
+ Container orm-benchmark-python-run-cfabf7790585 Created 
+[2026-10-22T13:04:41Z] Measuring java: raw_sql hibernate
+[2026-10-22T13:04:41Z] Run java/raw_sql A1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-fc6de60ed669 Creating 
+ Container orm-benchmark-java-run-fc6de60ed669 Created 
+[2026-10-22T13:05:02Z] Run java/hibernate A1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-5c59cab71518 Creating 
+ Container orm-benchmark-java-run-5c59cab71518 Created 
+[2026-10-22T13:05:15Z] Run java/hibernate A2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-0d689a417996 Creating 
+ Container orm-benchmark-java-run-0d689a417996 Created 
+[2026-10-22T13:05:39Z] Run java/raw_sql A2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-c6fbdffa7dd1 Creating 
+ Container orm-benchmark-java-run-c6fbdffa7dd1 Created 
+[2026-10-22T13:06:02Z] Run java/raw_sql A3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-0e6657b7468d Creating 
+ Container orm-benchmark-java-run-0e6657b7468d Created 
+[2026-10-22T13:06:09Z] Run java/hibernate A3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-5fa5a812b2f4 Creating 
+ Container orm-benchmark-java-run-5fa5a812b2f4 Created 
+[2026-10-22T13:06:21Z] Run java/hibernate A4
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-b27a932a5c67 Creating 
+ Container orm-benchmark-java-run-b27a932a5c67 Created 
+[2026-10-22T13:06:48Z] Run java/raw_sql A4
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-bba5b57d04cc Creating 
+ Container orm-benchmark-java-run-bba5b57d04cc Created 
+[2026-10-22T13:07:12Z] Run java/raw_sql B1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-fb187e7d4b75 Creating 
+ Container orm-benchmark-java-run-fb187e7d4b75 Created 
+[2026-10-22T13:07:34Z] Run java/hibernate B1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-0c473460742b Creating 
+ Container orm-benchmark-java-run-0c473460742b Created 
+[2026-10-22T13:07:57Z] Run java/hibernate B2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-57b714781f76 Creating 
+ Container orm-benchmark-java-run-57b714781f76 Created 
+[2026-10-22T13:08:56Z] Run java/raw_sql B2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-e02ba0b3287f Creating 
+ Container orm-benchmark-java-run-e02ba0b3287f Created 
+[2026-10-22T13:10:22Z] Run java/raw_sql B3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-2a14b899ee6b Creating 
+ Container orm-benchmark-java-run-2a14b899ee6b Created 
+[2026-10-22T13:10:46Z] Run java/hibernate B3
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-c3207bec5740 Creating 
+ Container orm-benchmark-java-run-c3207bec5740 Created 
+[2026-10-22T13:11:00Z] Run java/hibernate C1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-e2f272637921 Creating 
+ Container orm-benchmark-java-run-e2f272637921 Created 
+[2026-10-22T13:11:45Z] Run java/raw_sql C1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-654a85ba11b6 Creating 
+ Container orm-benchmark-java-run-654a85ba11b6 Created 
+[2026-10-22T13:12:28Z] Run java/raw_sql C2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-a880f3d7a810 Creating 
+ Container orm-benchmark-java-run-a880f3d7a810 Created 
+[2026-10-22T13:12:36Z] Run java/hibernate C2
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-afbe3decdebf Creating 
+ Container orm-benchmark-java-run-afbe3decdebf Created 
+[2026-10-22T13:12:46Z] Run java/hibernate D1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-03e4ed8e633c Creating 
+ Container orm-benchmark-java-run-03e4ed8e633c Created 
+[2026-10-22T13:12:50Z] Run java/raw_sql D1
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+ Container orm-benchmark-java-run-4af9a6c83452 Creating 
+ Container orm-benchmark-java-run-4af9a6c83452 Created 
+[2026-10-22T13:12:52Z] Collecting versions and environment
+Collecting TypeScript versions...
+ Container orm-benchmark-typescript-run-5bf7d4576ee7 Creating 
+ Container orm-benchmark-typescript-run-5bf7d4576ee7 Created 
+Collecting PHP versions...
+ Container orm-benchmark-php-run-4b67f5c25a6f Creating 
+ Container orm-benchmark-php-run-4b67f5c25a6f Created 
+Collecting Python versions...
+ Container orm-benchmark-python-run-0c6d4a1cabcb Creating 
+ Container orm-benchmark-python-run-0c6d4a1cabcb Created 
+Collecting Java versions...
+ Container orm-benchmark-java-run-eeaf0f353e01 Creating 
+ Container orm-benchmark-java-run-eeaf0f353e01 Created 
+Collecting PostgreSQL version...
+Wrote results/environment.json
+[2026-10-22T13:12:56Z] EXPLAIN plans
+ Container benchmark-postgres Running 
+ Container benchmark-postgres Waiting 
+ Container benchmark-postgres Healthy 
+Wrote 10 EXPLAIN files to /Users/e.ahmetovic/Desktop/orm-benchmark/results/run-20261022T121748Z/explain
+[2026-10-22T13:12:58Z] Finished

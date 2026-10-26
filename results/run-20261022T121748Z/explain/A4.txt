@@ -1,0 +1,27 @@
+-- Scenario: A4
+-- Source: benchmarks/typescript/src/scenarios/raw_sql/Scenario.ts (same logical SQL in all raw implementations)
+-- Parameters: validation values (u = 0.1)
+-- Note: single EXPLAIN (ANALYZE, BUFFERS) run after one warm-up execution; timings are indicative only.
+-- PostgreSQL 16.14 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+-- Generated: 2026-10-22 13:12:57 UTC
+
+-- A4: orders with users (single JOIN)
+SELECT o.id, o.total, o.status, o.created_at, u.id AS user_id, u.name AS user_name, u.email AS user_email FROM orders o INNER JOIN users u ON u.id = o.user_id ORDER BY o.id ASC LIMIT 100
+Limit  (cost=0.72..8.14 rows=100 width=67) (actual time=0.010..0.103 rows=100 loops=1)
+  Buffers: shared hit=301
+  ->  Nested Loop  (cost=0.72..14849.38 rows=200000 width=67) (actual time=0.010..0.099 rows=100 loops=1)
+        Buffers: shared hit=301
+        ->  Index Scan using orders_pkey on orders o  (cost=0.42..6798.42 rows=200000 width=31) (actual time=0.005..0.010 rows=100 loops=1)
+              Buffers: shared hit=4
+        ->  Memoize  (cost=0.30..0.32 rows=1 width=40) (actual time=0.001..0.001 rows=1 loops=100)
+              Cache Key: o.user_id
+              Cache Mode: logical
+              Hits: 1  Misses: 99  Evictions: 0  Overflows: 0  Memory Usage: 14kB
+              Buffers: shared hit=297
+              ->  Index Scan using users_pkey on users u  (cost=0.29..0.31 rows=1 width=40) (actual time=0.001..0.001 rows=1 loops=99)
+                    Index Cond: (id = o.user_id)
+                    Buffers: shared hit=297
+Planning:
+  Buffers: shared hit=12
+Planning Time: 0.073 ms
+Execution Time: 0.200 ms

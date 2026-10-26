@@ -1,0 +1,31 @@
+-- Scenario: B1
+-- Source: benchmarks/typescript/src/scenarios/raw_sql/Scenario.ts (same logical SQL in all raw implementations)
+-- Parameters: validation values (u = 0.1)
+-- Note: single EXPLAIN (ANALYZE, BUFFERS) run after one warm-up execution; timings are indicative only.
+-- PostgreSQL 16.14 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+-- Generated: 2026-10-22 13:12:57 UTC
+
+-- B1: order -> items -> product -> category (order_id = 20001)
+SELECT o.id AS order_id, o.total, o.status, oi.id AS item_id, oi.quantity, oi.price AS item_price, p.name AS product_name, p.price AS product_price, c.name AS category_name FROM orders o INNER JOIN order_items oi ON oi.order_id = o.id INNER JOIN products p ON p.id = oi.product_id INNER JOIN categories c ON c.id = p.category_id WHERE o.id = 20001
+Nested Loop  (cost=1.28..50.84 rows=4 width=81) (actual time=0.015..0.018 rows=3 loops=1)
+  Buffers: shared hit=23
+  ->  Nested Loop  (cost=1.14..50.20 rows=4 width=77) (actual time=0.011..0.014 rows=3 loops=1)
+        Buffers: shared hit=17
+        ->  Nested Loop  (cost=0.84..16.97 rows=4 width=37) (actual time=0.008..0.009 rows=3 loops=1)
+              Buffers: shared hit=8
+              ->  Index Scan using orders_pkey on orders o  (cost=0.42..8.44 rows=1 width=19) (actual time=0.004..0.004 rows=1 loops=1)
+                    Index Cond: (id = 20001)
+                    Buffers: shared hit=4
+              ->  Index Scan using idx_order_items_order on order_items oi  (cost=0.42..8.50 rows=4 width=22) (actual time=0.003..0.004 rows=3 loops=1)
+                    Index Cond: (order_id = 20001)
+                    Buffers: shared hit=4
+        ->  Index Scan using products_pkey on products p  (cost=0.29..8.31 rows=1 width=48) (actual time=0.001..0.001 rows=1 loops=3)
+              Index Cond: (id = oi.product_id)
+              Buffers: shared hit=9
+  ->  Index Scan using categories_pkey on categories c  (cost=0.14..0.16 rows=1 width=12) (actual time=0.001..0.001 rows=1 loops=3)
+        Index Cond: (id = p.category_id)
+        Buffers: shared hit=6
+Planning:
+  Buffers: shared hit=18
+Planning Time: 0.148 ms
+Execution Time: 0.050 ms

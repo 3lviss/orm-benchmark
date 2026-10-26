@@ -1,0 +1,14 @@
+-- Scenario: A1
+-- Source: benchmarks/typescript/src/scenarios/raw_sql/Scenario.ts (same logical SQL in all raw implementations)
+-- Parameters: validation values (u = 0.1)
+-- Note: single EXPLAIN (ANALYZE, BUFFERS) run after one warm-up execution; timings are indicative only.
+-- PostgreSQL 16.14 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+-- Generated: 2026-10-22 13:12:57 UTC
+
+-- A1: user by primary key (id = 1001)
+SELECT id, email, name, created_at FROM users WHERE id = 1001
+Index Scan using users_pkey on users  (cost=0.29..8.30 rows=1 width=48) (actual time=0.006..0.007 rows=1 loops=1)
+  Index Cond: (id = 1001)
+  Buffers: shared hit=3
+Planning Time: 0.027 ms
+Execution Time: 0.013 ms

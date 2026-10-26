@@ -1,0 +1,51 @@
+-- Scenario: B3
+-- Source: benchmarks/typescript/src/scenarios/raw_sql/Scenario.ts (same logical SQL in all raw implementations)
+-- Parameters: validation values (u = 0.1)
+-- Note: single EXPLAIN (ANALYZE, BUFFERS) run after one warm-up execution; timings are indicative only.
+-- PostgreSQL 16.14 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+-- Generated: 2026-10-22 13:12:57 UTC
+
+-- B3: products by tag (tag_id = 51); no index on product_tags(tag_id), PK is (product_id, tag_id)
+SELECT p.id, p.name, p.price, c.name AS category_name FROM products p INNER JOIN product_tags pt ON pt.product_id = p.id INNER JOIN categories c ON c.id = p.category_id WHERE pt.tag_id = 51 ORDER BY p.id ASC LIMIT 50
+Limit  (cost=0.85..792.22 rows=50 width=52) (actual time=0.025..0.221 rows=50 loops=1)
+  Buffers: shared hit=336
+  ->  Nested Loop  (cost=0.85..6284.35 rows=397 width=52) (actual time=0.025..0.219 rows=50 loops=1)
+        Buffers: shared hit=336
+        ->  Nested Loop  (cost=0.71..6220.80 rows=397 width=48) (actual time=0.012..0.187 rows=50 loops=1)
+              Buffers: shared hit=236
+              ->  Index Only Scan using product_tags_pkey on product_tags pt  (cost=0.42..4038.72 rows=397 width=4) (actual time=0.008..0.148 rows=50 loops=1)
+                    Index Cond: (tag_id = 51)
+                    Heap Fetches: 0
+                    Buffers: shared hit=86
+              ->  Index Scan using products_pkey on products p  (cost=0.29..5.50 rows=1 width=48) (actual time=0.001..0.001 rows=1 loops=50)
+                    Index Cond: (id = pt.product_id)
+                    Buffers: shared hit=150
+        ->  Index Scan using categories_pkey on categories c  (cost=0.14..0.16 rows=1 width=12) (actual time=0.000..0.000 rows=1 loops=50)
+              Index Cond: (id = p.category_id)
+              Buffers: shared hit=100
+Planning:
+  Buffers: shared hit=18
+Planning Time: 0.153 ms
+Execution Time: 0.240 ms
+
+-- B3 (generic plan: PREPARE + EXECUTE, plan_cache_mode = force_generic_plan)
+Limit  (cost=0.85..786.07 rows=50 width=52) (actual time=0.021..0.195 rows=50 loops=1)
+  Buffers: shared hit=336
+  ->  Nested Loop  (cost=0.85..6298.26 rows=401 width=52) (actual time=0.020..0.193 rows=50 loops=1)
+        Buffers: shared hit=336
+        ->  Nested Loop  (cost=0.71..6234.07 rows=401 width=48) (actual time=0.017..0.171 rows=50 loops=1)
+              Buffers: shared hit=236
+              ->  Index Only Scan using product_tags_pkey on product_tags pt  (cost=0.42..4038.76 rows=401 width=4) (actual time=0.013..0.135 rows=50 loops=1)
+                    Index Cond: (tag_id = $1)
+                    Heap Fetches: 0
+                    Buffers: shared hit=86
+              ->  Index Scan using products_pkey on products p  (cost=0.29..5.47 rows=1 width=48) (actual time=0.001..0.001 rows=1 loops=50)
+                    Index Cond: (id = pt.product_id)
+                    Buffers: shared hit=150
+        ->  Index Scan using categories_pkey on categories c  (cost=0.14..0.16 rows=1 width=12) (actual time=0.000..0.000 rows=1 loops=50)
+              Index Cond: (id = p.category_id)
+              Buffers: shared hit=100
+Planning:
+  Buffers: shared hit=18
+Planning Time: 0.161 ms
+Execution Time: 0.231 ms

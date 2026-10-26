@@ -1,0 +1,33 @@
+-- Scenario: C1
+-- Source: benchmarks/typescript/src/scenarios/raw_sql/Scenario.ts (same logical SQL in all raw implementations)
+-- Parameters: validation values (u = 0.1)
+-- Note: single EXPLAIN (ANALYZE, BUFFERS) run after one warm-up execution; timings are indicative only.
+-- PostgreSQL 16.14 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+-- Generated: 2026-10-22 13:12:57 UTC
+
+-- C1 INSERT chunk 1/20 (500 rows, multi-row VALUES; chunks 2..20 are identical in shape)
+Insert on products  (cost=0.00..8.75 rows=0 width=0) (actual time=2.020..2.021 rows=0 loops=1)
+  Buffers: shared hit=3522 read=8 dirtied=167 written=2
+  ->  Values Scan on "*VALUES*"  (cost=0.00..8.75 rows=500 width=580) (actual time=0.113..0.367 rows=500 loops=1)
+        Buffers: shared hit=508 read=4 dirtied=1
+Planning:
+  Buffers: shared hit=5 read=1
+Planning Time: 0.608 ms
+Trigger for constraint products_category_id_fkey: time=1.367 calls=500
+Execution Time: 3.429 ms
+
+-- C1 cleanup: delete the 10 000 inserted rows
+DELETE FROM products WHERE name LIKE 'Bulk Product%'
+Delete on products  (cost=0.00..4055.09 rows=0 width=0) (actual time=8.600..8.601 rows=0 loops=1)
+  Buffers: shared hit=23429 read=1
+  ->  Seq Scan on products  (cost=0.00..4055.09 rows=5 width=6) (actual time=0.005..4.153 rows=10000 loops=1)
+        Filter: ((name)::text ~~ 'Bulk Product%'::text)
+        Rows Removed by Filter: 50000
+        Buffers: shared hit=3424
+Planning:
+  Buffers: shared hit=30
+Planning Time: 0.128 ms
+Trigger for constraint product_tags_product_id_fkey: time=58.807 calls=10000
+Trigger for constraint order_items_product_id_fkey: time=112.433 calls=10000
+Trigger for constraint reviews_product_id_fkey: time=111.110 calls=10000
+Execution Time: 292.092 ms

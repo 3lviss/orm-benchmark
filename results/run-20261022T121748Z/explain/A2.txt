@@ -1,0 +1,41 @@
+-- Scenario: A2
+-- Source: benchmarks/typescript/src/scenarios/raw_sql/Scenario.ts (same logical SQL in all raw implementations)
+-- Parameters: validation values (u = 0.1)
+-- Note: single EXPLAIN (ANALYZE, BUFFERS) run after one warm-up execution; timings are indicative only.
+-- PostgreSQL 16.14 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+-- Generated: 2026-10-22 13:12:57 UTC
+
+-- A2: products by category (category_id = 11)
+SELECT id, name, price, created_at FROM products WHERE category_id = 11 ORDER BY created_at DESC LIMIT 20
+Limit  (cost=1399.62..1399.67 rows=20 width=52) (actual time=0.279..0.280 rows=20 loops=1)
+  Buffers: shared hit=510
+  ->  Sort  (cost=1399.62..1400.91 rows=513 width=52) (actual time=0.278..0.279 rows=20 loops=1)
+        Sort Key: created_at DESC
+        Sort Method: top-N heapsort  Memory: 28kB
+        Buffers: shared hit=510
+        ->  Bitmap Heap Scan on products  (cost=8.27..1385.97 rows=513 width=52) (actual time=0.086..0.221 rows=542 loops=1)
+              Recheck Cond: (category_id = 11)
+              Heap Blocks: exact=508
+              Buffers: shared hit=510
+              ->  Bitmap Index Scan on idx_products_category  (cost=0.00..8.14 rows=513 width=0) (actual time=0.063..0.063 rows=542 loops=1)
+                    Index Cond: (category_id = 11)
+                    Buffers: shared hit=2
+Planning Time: 0.019 ms
+Execution Time: 0.304 ms
+
+-- A2 (generic plan: PREPARE + EXECUTE, plan_cache_mode = force_generic_plan)
+Limit  (cost=1373.47..1373.52 rows=20 width=52) (actual time=0.249..0.251 rows=20 loops=1)
+  Buffers: shared hit=510
+  ->  Sort  (cost=1373.47..1374.72 rows=500 width=52) (actual time=0.249..0.249 rows=20 loops=1)
+        Sort Key: created_at DESC
+        Sort Method: top-N heapsort  Memory: 28kB
+        Buffers: shared hit=510
+        ->  Bitmap Heap Scan on products  (cost=8.16..1360.17 rows=500 width=52) (actual time=0.090..0.202 rows=542 loops=1)
+              Recheck Cond: (category_id = $1)
+              Heap Blocks: exact=508
+              Buffers: shared hit=510
+              ->  Bitmap Index Scan on idx_products_category  (cost=0.00..8.04 rows=500 width=0) (actual time=0.060..0.060 rows=542 loops=1)
+                    Index Cond: (category_id = $1)
+                    Buffers: shared hit=2
+Planning Time: 0.034 ms
+Execution Time: 0.267 ms

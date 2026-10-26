@@ -1,0 +1,81 @@
+-- Scenario: C2
+-- Source: benchmarks/typescript/src/scenarios/raw_sql/Scenario.ts (same logical SQL in all raw implementations)
+-- Parameters: validation values (u = 0.1)
+-- Note: single EXPLAIN (ANALYZE, BUFFERS) run after one warm-up execution; timings are indicative only.
+-- PostgreSQL 16.14 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+-- Generated: 2026-10-22 12:18:36 UTC
+
+-- C2: shipped -> delivered (1000 rows)
+UPDATE orders SET status = 'delivered' FROM (SELECT id FROM orders WHERE status = 'shipped' AND created_at < NOW() - INTERVAL '30 days' ORDER BY id LIMIT 1000) AS batch WHERE orders.id = batch.id
+Update on orders  (cost=250.06..4601.06 rows=0 width=0) (actual time=37.721..37.724 rows=0 loops=1)
+  Buffers: shared hit=14471 read=2365 dirtied=847 written=30
+  ->  Hash Join  (cost=250.06..4601.06 rows=1000 width=152) (actual time=0.925..23.751 rows=1000 loops=1)
+        Hash Cond: (orders.id = batch.id)
+        Buffers: shared hit=59 read=1592
+        ->  Seq Scan on orders  (cost=0.00..3591.00 rows=200000 width=10) (actual time=0.019..13.545 rows=200000 loops=1)
+              Buffers: shared hit=55 read=1536
+        ->  Hash  (cost=237.56..237.56 rows=1000 width=32) (actual time=0.889..0.890 rows=1000 loops=1)
+              Buckets: 1024  Batches: 1  Memory Usage: 71kB
+              Buffers: shared hit=4 read=56
+              ->  Subquery Scan on batch  (cost=0.42..237.56 rows=1000 width=32) (actual time=0.014..0.803 rows=1000 loops=1)
+                    Buffers: shared hit=4 read=56
+                    ->  Limit  (cost=0.42..227.56 rows=1000 width=4) (actual time=0.010..0.722 rows=1000 loops=1)
+                          Buffers: shared hit=4 read=56
+                          ->  Index Scan using orders_pkey on orders orders_1  (cost=0.42..8798.42 rows=38734 width=4) (actual time=0.009..0.680 rows=1000 loops=1)
+                                Filter: (((status)::text = 'shipped'::text) AND (created_at < (now() - '30 days'::interval)))
+                                Rows Removed by Filter: 4319
+                                Buffers: shared hit=4 read=56
+Planning:
+  Buffers: shared hit=179 read=40 dirtied=1
+Planning Time: 1.002 ms
+Execution Time: 37.839 ms
+
+-- C2 restore: delivered -> shipped (1000 rows)
+UPDATE orders SET status = 'shipped' FROM (SELECT id FROM orders WHERE status = 'delivered' AND created_at < NOW() - INTERVAL '30 days' ORDER BY id LIMIT 1000) AS batch WHERE orders.id = batch.id
+Update on orders  (cost=253.51..4629.07 rows=0 width=0) (actual time=21.067..21.068 rows=0 loops=1)
+  Buffers: shared hit=18022 read=62 dirtied=73 written=11
+  ->  Hash Join  (cost=253.51..4629.07 rows=1000 width=152) (actual time=0.535..14.916 rows=1000 loops=1)
+        Hash Cond: (orders.id = batch.id)
+        Buffers: shared hit=2575
+        ->  Seq Scan on orders  (cost=0.00..3611.31 rows=201131 width=10) (actual time=0.003..7.297 rows=200000 loops=1)
+              Buffers: shared hit=1600
+        ->  Hash  (cost=241.01..241.01 rows=1000 width=32) (actual time=0.524..0.525 rows=1000 loops=1)
+              Buckets: 1024  Batches: 1  Memory Usage: 71kB
+              Buffers: shared hit=975
+              ->  Subquery Scan on batch  (cost=0.42..241.01 rows=1000 width=32) (actual time=0.015..0.460 rows=1000 loops=1)
+                    Buffers: shared hit=975
+                    ->  Limit  (cost=0.42..231.01 rows=1000 width=4) (actual time=0.013..0.388 rows=1000 loops=1)
+                          Buffers: shared hit=975
+                          ->  Index Scan using orders_pkey on orders orders_1  (cost=0.42..8891.70 rows=38558 width=4) (actual time=0.012..0.350 rows=1000 loops=1)
+                                Filter: (((status)::text = 'delivered'::text) AND (created_at < (now() - '30 days'::interval)))
+                                Rows Removed by Filter: 1583
+                                Buffers: shared hit=975
+Planning:
+  Buffers: shared hit=10
+Planning Time: 0.133 ms
+Trigger for constraint orders_user_id_fkey: time=3.931 calls=471
+Execution Time: 25.047 ms
+
+-- C2 (generic plan: PREPARE + EXECUTE, plan_cache_mode = force_generic_plan)
+Update on orders  (cost=604.72..4999.38 rows=0 width=0) (actual time=20.996..20.998 rows=0 loops=1)
+  Buffers: shared hit=20981 dirtied=10 written=10
+  ->  Hash Join  (cost=604.72..4999.38 rows=1000 width=152) (actual time=1.017..14.726 rows=1000 loops=1)
+        Hash Cond: (orders.id = batch.id)
+        Buffers: shared hit=5219
+        ->  Seq Scan on orders  (cost=0.00..3627.11 rows=202011 width=10) (actual time=0.002..7.021 rows=200000 loops=1)
+              Buffers: shared hit=1607
+        ->  Hash  (cost=592.22..592.22 rows=1000 width=32) (actual time=1.007..1.009 rows=1000 loops=1)
+              Buckets: 1024  Batches: 1  Memory Usage: 71kB
+              Buffers: shared hit=3612
+              ->  Subquery Scan on batch  (cost=0.42..592.22 rows=1000 width=32) (actual time=0.007..0.938 rows=1000 loops=1)
+                    Buffers: shared hit=3612
+                    ->  Limit  (cost=0.42..582.22 rows=1000 width=4) (actual time=0.006..0.864 rows=1000 loops=1)
+                          Buffers: shared hit=3612
+                          ->  Index Scan using orders_pkey on orders orders_1  (cost=0.42..7910.64 rows=13596 width=4) (actual time=0.005..0.830 rows=1000 loops=1)
+                                Filter: ((created_at < $1) AND ((status)::text = 'shipped'::text))
+                                Rows Removed by Filter: 4319
+                                Buffers: shared hit=3612
+Planning:
+  Buffers: shared hit=10
+Planning Time: 0.094 ms
+Execution Time: 21.032 ms
